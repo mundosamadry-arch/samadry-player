@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animación Show Player - Panel del Animador</title>
+    <meta name="description" content="Reproductor de sonido, temporizador y banco de sonidos interactivo para animadores de eventos infantiles musicales.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div class="glass-bg"></div>
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+    <div class="glow-orb orb-3"></div>
+
+    <div class="app-container">
+        <!-- HEADER -->
+        <header class="app-header">
+            <div class="header-logo">
+                <span class="logo-icon">🎵</span>
+                <h1>Samadry<span class="highlight">Player</span></h1>
+            </div>
+            
+            <div class="header-controls">
+                <!-- Asistente de Voz -->
+                <button id="voice-assistant-btn" class="icon-btn voice-btn-inactive" title="Activar Asistente de Voz">🎙️</button>
+
+                <!-- Selector de Duración del Show -->
+                <div class="control-group">
+                    <label for="show-duration-select">Duración del Show:</label>
+                    <select id="show-duration-select" class="custom-select">
+                        <option value="60">1 Hora (60 min)</option>
+                        <option value="90" selected>1.5 Horas (90 min)</option>
+                        <option value="120">2 Horas (120 min)</option>
+                    </select>
+                </div>
+
+                <!-- Master Volume -->
+                <div class="control-group master-volume-container">
+                    <span class="volume-icon">🔊</span>
+                    <input type="range" id="master-volume-slider" min="0" max="1" step="0.05" value="0.8" class="custom-slider">
+                    <span id="master-volume-text">80%</span>
+                </div>
+
+                <button id="settings-btn" class="icon-btn" title="Ajustes de Spotify">⚙️</button>
+                <button id="fullscreen-btn" class="icon-btn" title="Pantalla Completa">📺</button>
+            </div>
+        </header>
+
+        <!-- MAIN LAYOUT GRID -->
+        <main class="main-grid">
+            
+            <!-- COLUMNA IZQUIERDA: TEMPORIZADORES Y GUION -->
+            <section class="panel timer-panel" aria-label="Control de Tiempo del Show">
+                <div class="panel-header">
+                    <h2>⏰ Control del Show</h2>
+                </div>
+                
+                <!-- Cronómetro General -->
+                <div class="main-chronometer">
+                    <div id="chrono-time">00:00:00</div>
+                    <div class="chrono-progress-bar">
+                        <div id="chrono-progress" class="chrono-progress-fill" style="width: 0%;"></div>
+                    </div>
+                    <div class="chrono-labels">
+                        <span id="chrono-status">Detenido</span>
+                        <span id="chrono-total-time">Total: 90:00</span>
+                    </div>
+                    <div class="chrono-controls">
+                        <button id="chrono-start-btn" class="btn btn-success">▶️ Iniciar Show</button>
+                        <button id="chrono-pause-btn" class="btn btn-warning" disabled>⏸️ Pausar</button>
+                        <button id="chrono-reset-btn" class="btn btn-danger">⏹️ Reiniciar</button>
+                    </div>
+                </div>
+
+                <!-- Tramos del Show -->
+                <div class="show-segments-container">
+                    <h3>Tramos de Animación</h3>
+                    <div id="segments-list" class="segments-list">
+                        <!-- Generados dinámicamente por JS -->
+                    </div>
+                </div>
+
+                <!-- Notas y Guion en vivo -->
+                <div class="notes-container">
+                    <h3>📝 Guion y Datos de la Fiesta</h3>
+                    <textarea id="live-notes" placeholder="Escribe aquí: nombres de los niños, canciones pedidas por el cliente, sorpresas o recordatorios del show... (se guarda automáticamente)"></textarea>
+                </div>
+            </section>
+
+            <!-- COLUMNA CENTRAL: REPRODUCTOR DE MÚSICA Y LISTAS -->
+            <section class="panel player-panel" aria-label="Reproductor Musical">
+                <div class="panel-header">
+                    <h2>💿 Reproductor de Música</h2>
+                </div>
+
+                <!-- Reproductor Activo -->
+                <div class="active-player-card">
+                    <div class="track-info">
+                        <div class="track-disc-wrapper">
+                            <div id="track-disc" class="track-disc">💿</div>
+                        </div>
+                        <div class="track-text">
+                            <div id="track-title" class="track-title">Selecciona una pista</div>
+                            <div id="track-subtitle" class="track-subtitle">Listado temático</div>
+                        </div>
+                    </div>
+
+                    <!-- Progreso del Audio -->
+                    <div class="audio-progress-container">
+                        <span id="audio-current-time" class="time-label">0:00</span>
+                        <div class="slider-wrapper">
+                            <input type="range" id="audio-progress-slider" min="0" max="100" value="0" class="custom-slider progress-slider">
+                            <div id="visual-progress-fill" class="visual-progress-fill" style="width: 0%;"></div>
+                        </div>
+                        <span id="audio-total-time" class="time-label">0:00</span>
+                    </div>
+
+                    <!-- Botonera de control -->
+                    <div class="player-controls">
+                        <button id="player-loop-btn" class="player-btn toggle-btn" title="Bucle">🔁</button>
+                        <button id="player-prev-btn" class="player-btn" title="Anterior">⏮️</button>
+                        <button id="player-play-btn" class="player-btn play-main-btn" title="Reproducir">▶️</button>
+                        <button id="player-next-btn" class="player-btn" title="Siguiente">⏭️</button>
+                        <button id="player-stop-btn" class="player-btn" title="Detener">⏹️</button>
+                    </div>
+                </div>
+
+                <!-- Listas de Reproducción por Pestañas -->
+                <div class="playlist-tabs-container">
+                    <div class="playlist-tabs" role="tablist">
+                        <button id="tab-samadry" class="tab-btn active" role="tab" aria-selected="true" aria-controls="playlist-samadry">✨ Samadry</button>
+                        <button id="tab-juegos" class="tab-btn" role="tab" aria-selected="false" aria-controls="playlist-juegos">🏃 Juegos</button>
+                        <button id="tab-tematico" class="tab-btn" role="tab" aria-selected="false" aria-controls="playlist-tematico">🤠 Temáticas</button>
+                        <button id="tab-locales" class="tab-btn" role="tab" aria-selected="false" aria-controls="playlist-locales">📂 Mis MP3</button>
+                    </div>
+
+                    <div id="playlist-content" class="playlist-content">
+                        <!-- La lista de canciones se inyecta dinámicamente con JS según la pestaña activa -->
+                    </div>
+                    
+                    <!-- Uploader para archivos locales (solo visible en pestaña Mis MP3) -->
+                    <div id="local-uploader-area" class="local-uploader-area hidden">
+                        <div class="upload-dropzone" id="drop-zone">
+                            <span class="upload-icon">📥</span>
+                            <p>Arrastra archivos de música (MP3/WAV) o haz clic para subir</p>
+                            <input type="file" id="local-file-input" multiple accept="audio/*" class="hidden-input">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- COLUMNA DERECHA: BANCO DE SONIDOS (SOUNDBOARD) -->
+            <section class="panel soundboard-panel" aria-label="Banco de Efectos de Sonido">
+                <div class="panel-header">
+                    <h2>🎉 Banco de Sonidos (Soundboard)</h2>
+                    <span class="hotkey-tip">Atajos: Teclas [1-9]</span>
+                </div>
+                
+                <div class="soundboard-grid" id="soundboard-grid">
+                    <!-- Botón 1: Aplausos -->
+                    <button class="sound-pad pad-pink" data-sound="applause" data-key="1">
+                        <span class="pad-key">1</span>
+                        <span class="pad-emoji">👏</span>
+                        <span class="pad-name">Aplausos</span>
+                    </button>
+                    <!-- Botón 2: Redoble -->
+                    <button class="sound-pad pad-purple" data-sound="drumroll" data-key="2">
+                        <span class="pad-key">2</span>
+                        <span class="pad-emoji">🥁</span>
+                        <span class="pad-name">Redoble</span>
+                    </button>
+                    <!-- Botón 3: Magia -->
+                    <button class="sound-pad pad-cyan" data-sound="magic" data-key="3">
+                        <span class="pad-key">3</span>
+                        <span class="pad-emoji">🪄</span>
+                        <span class="pad-name">Mágico</span>
+                    </button>
+                    <!-- Botón 4: Bocina Cómica -->
+                    <button class="sound-pad pad-yellow" data-sound="horn" data-key="4">
+                        <span class="pad-key">4</span>
+                        <span class="pad-emoji">🎺</span>
+                        <span class="pad-name">Bocina</span>
+                    </button>
+                    <!-- Botón 5: Risas Niños -->
+                    <button class="sound-pad pad-green" data-sound="laughs" data-key="5">
+                        <span class="pad-key">5</span>
+                        <span class="pad-emoji">😆</span>
+                        <span class="pad-name">Risas</span>
+                    </button>
+                    <!-- Botón 6: Suspenso -->
+                    <button class="sound-pad pad-orange" data-sound="suspense" data-key="6">
+                        <span class="pad-key">6</span>
+                        <span class="pad-emoji">🕵️</span>
+                        <span class="pad-name">Suspenso</span>
+                    </button>
+                    <!-- Botón 7: Ding/Éxito -->
+                    <button class="sound-pad pad-blue" data-sound="ding" data-key="7">
+                        <span class="pad-key">7</span>
+                        <span class="pad-emoji">🔔</span>
+                        <span class="pad-name">Ding!</span>
+                    </button>
+                    <!-- Botón 8: Error/Fallo -->
+                    <button class="sound-pad pad-red" data-sound="error" data-key="8">
+                        <span class="pad-key">8</span>
+                        <span class="pad-emoji">💥</span>
+                        <span class="pad-name">Fallo</span>
+                    </button>
+                    <!-- Botón 9: Silbato de Árbitro -->
+                    <button class="sound-pad pad-violet" data-sound="whistle" data-key="9">
+                        <span class="pad-key">9</span>
+                        <span class="pad-emoji">🗣️</span>
+                        <span class="pad-name">Silbato</span>
+                    </button>
+                </div>
+
+                <!-- Custom Soundboard Binder -->
+                <div class="custom-sfx-binder">
+                    <h3>Personalizar Banco de Sonidos</h3>
+                    <p class="section-desc">¿Quieres cambiar algún sonido por un MP3 propio? Selecciónalo y carga tu archivo:</p>
+                    <div class="binder-controls">
+                        <select id="sfx-select-to-bind" class="custom-select">
+                            <option value="applause">Reemplazar 1. Aplausos 👏</option>
+                            <option value="drumroll">Reemplazar 2. Redoble 🥁</option>
+                            <option value="magic">Reemplazar 3. Mágico 🪄</option>
+                            <option value="horn">Reemplazar 4. Bocina 🎺</option>
+                            <option value="laughs">Reemplazar 5. Risas 😆</option>
+                            <option value="suspense">Reemplazar 6. Suspenso 🕵️</option>
+                            <option value="ding">Reemplazar 7. Ding! 🔔</option>
+                            <option value="error">Reemplazar 8. Fallo 💥</option>
+                            <option value="whistle">Reemplazar 9. Silbato 🗣️</option>
+                        </select>
+                        <label for="sfx-file-input" class="btn btn-secondary">📁 Elegir Audio</label>
+                        <input type="file" id="sfx-file-input" accept="audio/*" class="hidden-input">
+                        <button id="sfx-reset-all-btn" class="btn btn-outline-danger" title="Restaurar valores de fábrica">🔄 Reset</button>
+                    </div>
+                </div>
+            </section>
+            
+        </main>
+
+        <!-- FOOTER: VISUALIZADOR DE ONDA DE SONIDO -->
+        <footer class="app-footer">
+            <div class="visualizer-container">
+                <canvas id="audio-visualizer"></canvas>
+            </div>
+            <div class="footer-status">
+                <span id="audio-source-status">Modo: Sintetizador Web Audio API Activo (Offline listo)</span>
+                <span>Desarrollado para Animaciones Musicales Infantiles</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- MODAL DE AJUSTES (SPOTIFY CONFIG) -->
+    <div id="settings-modal" class="modal hidden">
+        <div class="modal-content glass-card">
+            <span id="close-modal-btn" class="close-btn">&times;</span>
+            <h2>⚙️ Ajustes de Spotify Premium</h2>
+            <p class="modal-desc">Conecta la app a tu cuenta de Spotify Premium para reproducir cualquier canción usando la voz.</p>
+            
+            <div class="form-group">
+                <label for="spotify-client-id">Spotify Client ID:</label>
+                <input type="text" id="spotify-client-id" placeholder="Ingresa tu Client ID de Spotify Developer" class="custom-input">
+            </div>
+
+            <div class="modal-actions">
+                <button id="spotify-connect-btn" class="btn btn-spotify">🟢 Conectar Cuenta</button>
+                <button id="save-settings-btn" class="btn btn-success">💾 Guardar Client ID</button>
+            </div>
+            
+            <div id="spotify-status-info" class="spotify-status-info">
+                Estado: <span id="spotify-conn-state" class="state-disconnected">No Conectado</span>
+            </div>
+            
+            <p class="modal-help">¿No tienes un Client ID? Abre el archivo README.md para ver cómo crearlo gratis en 2 minutos.</p>
+        </div>
+    </div>
+
+    <!-- OVERLAY CUENTA ATRÁS -->
+    <div id="countdown-overlay" class="countdown-overlay hidden">
+        <div id="countdown-number" class="countdown-number">3</div>
+    </div>
+
+    <!-- AUDIO ELEMENT NATIVO (PARA ARCHIVOS Y STREAMING) -->
+    <audio id="native-audio-player"></audio>
+
+    <!-- SPOTIFY WEB PLAYBACK SDK -->
+    <script src="https://sdk.scdn.co/spotify-player.js"></script>
+    <!-- JS MAIN SCRIPT -->
+    <script src="app.js"></script>
+</body>
+</html>

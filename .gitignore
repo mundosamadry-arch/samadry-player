@@ -1,0 +1,10 @@
+.DS_Store
+node_modules/
+npm-debug.log*
+
+# Build/export artifacts
+*.zip
+
+# Local secrets or environment overrides
+.env
+.env.*
