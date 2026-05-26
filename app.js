@@ -119,17 +119,7 @@ function initAudioContext() {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         analyserNode = audioCtx.createAnalyser();
         analyserNode.fftSize = 128;
-        
-        // Conectar el reproductor de audio nativo al visualizador
-        const audioEl = document.getElementById("native-audio-player");
-        try {
-            const source = audioCtx.createMediaElementSource(audioEl);
-            source.connect(analyserNode);
-            analyserNode.connect(audioCtx.destination);
-            document.getElementById("audio-source-status").textContent = "Modo: Reproductor & Efectos conectados";
-        } catch (e) {
-            console.warn("No se pudo conectar el reproductor de audio al AudioContext (probablemente ya inicializado o restricción CORS). El reproductor funcionará por canal nativo.");
-        }
+        analyserNode.connect(audioCtx.destination);
         
         // Iniciar bucle de dibujo de visualización
         startVisualizer();
@@ -137,6 +127,12 @@ function initAudioContext() {
     if (audioCtx.state === 'suspended') {
         audioCtx.resume();
     }
+}
+
+function connectNativePlayerToVisualizerIfSafe() {
+    // Mantener el reproductor principal por canal nativo evita bloqueos CORS
+    // con pistas externas de demostracion y archivos cargados por el usuario.
+    return;
 }
 
 // 1. Aplausos (👏) - Mezcla de ráfagas rápidas de ruido blanco para simular palmas
@@ -1105,7 +1101,7 @@ function setNativePlayerSource(track) {
         nativePlayer.removeAttribute("crossorigin");
         nativePlayer.src = currentNativeObjectUrl;
     } else {
-        nativePlayer.crossOrigin = "anonymous";
+        nativePlayer.removeAttribute("crossorigin");
         nativePlayer.src = track.url;
     }
 }
@@ -1211,6 +1207,7 @@ async function playCurrentTrack() {
         try {
             await nativePlayer.play();
             initAudioContext();
+            connectNativePlayerToVisualizerIfSafe();
             playBtn.textContent = "⏸️";
             document.getElementById("track-disc").style.animationPlayState = "running";
             updateActiveSongHighlight();
