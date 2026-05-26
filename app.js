@@ -785,8 +785,12 @@ function showToast(msg) {
 // --- SPOTIFY WEB PLAYBACK SDK & WEB API HELPER ---
 
 function getSpotifyRedirectUri() {
-    const port = window.location.port ? `:${window.location.port}` : "";
-    return `${window.location.protocol}//127.0.0.1${port}/`;
+    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        const port = window.location.port ? `:${window.location.port}` : "";
+        return `${window.location.protocol}//127.0.0.1${port}/`;
+    }
+    
+    return `${window.location.origin}${window.location.pathname}`;
 }
 
 function generateRandomString(length) {
@@ -832,7 +836,7 @@ async function exchangeSpotifyCodeForToken(code) {
     
     if (!response.ok) {
         const details = await response.text();
-        throw new Error(`Spotify rechazó el inicio de sesión (${response.status}). ${details}`);
+        throw new Error(`Spotify rechazó el inicio de sesión (${response.status}). Revisa que el Redirect URI en Spotify sea exactamente: ${getSpotifyRedirectUri()}. Detalle: ${details}`);
     }
     
     const data = await response.json();

@@ -33,10 +33,12 @@ Para poder reproducir música directamente desde tu cuenta Premium de Spotify de
 3. Rellena los campos:
    * **App name**: `Samadry Player`
    * **App description**: `Control de animaciones musicales infantiles`
-   * **Redirect URIs**: Añade exactamente la URL **`http://127.0.0.1:8080/`** (y haz clic en Add).
+   * **Redirect URIs**: Añade exactamente estas URLs (haz clic en Add despues de cada una):
+     * **`https://mundosamadry-arch.github.io/`**
+     * **`http://127.0.0.1:8080/`** (solo si tambien vas a probar en local)
 4. Acepta los términos de uso y haz clic en **Save** (Guardar).
 5. Entra en los detalles de tu nueva app creada y ve a **Settings** (Ajustes) para copiar el **Client ID** (es una clave larga de letras y números).
-6. Abre la aplicación SamadryPlayer (`http://127.0.0.1:8080`), haz clic en el engranaje **Ajustes (⚙️)** en el encabezado, pega tu Client ID y haz clic en **Guardar**.
+6. Abre la aplicación SamadryPlayer (`https://mundosamadry-arch.github.io/` o `http://127.0.0.1:8080`), haz clic en el engranaje **Ajustes (⚙️)** en el encabezado, pega tu Client ID y haz clic en **Guardar**.
 7. Por último, haz clic en **Conectar Cuenta**. Se abrirá una ventana de Spotify para autorizar tu cuenta y te devolverá a la app ya conectada. ¡Listo!
 
 ---
