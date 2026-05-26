@@ -6,39 +6,25 @@
 const PLAYLISTS = {
     samadry: [
         {
-            title: "El Baile del Congelado",
+            title: "I'm Still Standing",
             artist: "Mundo Samadry",
-            duration: "02:45",
-            url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-            tag: "Marchosa / Coreografía"
+            duration: "--:--",
+            url: "https://animacionesinfantilesmusicales.com/samadry-audio/01-I_m_Still_Standing.mp3",
+            tag: "Canciones Samadry"
         },
         {
-            title: "Las Partes del Cuerpo",
+            title: "Superheroe",
             artist: "Mundo Samadry",
-            duration: "03:12",
-            url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
-            tag: "Calentamiento / Ritmo"
+            duration: "--:--",
+            url: "https://animacionesinfantilesmusicales.com/samadry-audio/03-Superheroe.mp3",
+            tag: "Canciones Samadry"
         },
         {
-            title: "El Auto de Papá (Versión Divertida)",
-            artist: "Pop Infantil",
-            duration: "02:18",
-            url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
-            tag: "Marchosa / Viaje"
-        },
-        {
-            title: "Chuchuwa Remix",
-            artist: "Clásicos Animación",
-            duration: "03:05",
-            url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
-            tag: "Bailes Marchosos"
-        },
-        {
-            title: "Cumpleaños Feliz Rockero",
+            title: "Hijo de Hombre",
             artist: "Mundo Samadry",
-            duration: "01:54",
-            url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3",
-            tag: "Momento Especial"
+            duration: "--:--",
+            url: "https://animacionesinfantilesmusicales.com/samadry-audio/04-Hijo_de_Hombre.mp3",
+            tag: "Canciones Samadry"
         }
     ],
     juegos: [
