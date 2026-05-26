@@ -36,32 +36,32 @@ const PLAYLISTS = {
     ],
     juegos: [
         {
-            title: "Ritmo de Palmas y Clapping",
-            artist: "Instrumental Rápido",
-            duration: "02:30",
-            url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3",
-            tag: "Juego de Sillas"
+            title: "I'm Still Standing",
+            artist: "Mundo Samadry",
+            duration: "--:--",
+            url: "https://animacionesinfantilesmusicales.com/samadry-audio/01-I_m_Still_Standing.mp3",
+            tag: "Juegos"
         },
         {
-            title: "Banda de Circo Marchosa",
-            artist: "Percusión y Viento",
-            duration: "03:10",
-            url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3",
-            tag: "Carreras / Relevos"
+            title: "Algo Asi Quiero Yo",
+            artist: "Mundo Samadry",
+            duration: "--:--",
+            url: "https://animacionesinfantilesmusicales.com/samadry-audio/02-Algo_Asi_Quiero_Yo.mp3",
+            tag: "Juegos"
         },
         {
-            title: "Bate Rebotón (Ritmo Electrónico)",
-            artist: "Bases Marchosas",
-            duration: "04:15",
-            url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3",
-            tag: "Gymkana"
+            title: "Superheroe",
+            artist: "Mundo Samadry",
+            duration: "--:--",
+            url: "https://animacionesinfantilesmusicales.com/samadry-audio/03-Superheroe.mp3",
+            tag: "Juegos"
         },
         {
-            title: "Tensión Musical (Juegos de Pistas)",
-            artist: "Intriga Instrumental",
-            duration: "03:32",
-            url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3",
-            tag: "Búsqueda Tesoro"
+            title: "Hijo de Hombre",
+            artist: "Mundo Samadry",
+            duration: "--:--",
+            url: "https://animacionesinfantilesmusicales.com/samadry-audio/04-Hijo_de_Hombre.mp3",
+            tag: "Juegos"
         }
     ],
     tematico: [
