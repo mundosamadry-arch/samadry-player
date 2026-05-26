@@ -13,6 +13,13 @@ const PLAYLISTS = {
             tag: "Canciones Samadry"
         },
         {
+            title: "Algo Asi Quiero Yo",
+            artist: "Mundo Samadry",
+            duration: "--:--",
+            url: "https://animacionesinfantilesmusicales.com/samadry-audio/02-Algo_Asi_Quiero_Yo.mp3",
+            tag: "Canciones Samadry"
+        },
+        {
             title: "Superheroe",
             artist: "Mundo Samadry",
             duration: "--:--",
