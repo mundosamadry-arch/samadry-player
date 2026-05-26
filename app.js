@@ -604,7 +604,7 @@ function toggleVoiceAssistant(forceState) {
 function processVoiceCommand(transcript) {
     // Comando directo sin activador: "preparados listos ya"
     if (transcript.includes("preparados listos ya") || transcript.includes("preparados listos y ya")) {
-        triggerGameCountdown();
+        startGamesMusicNow();
         return;
     }
     
@@ -703,6 +703,13 @@ function processVoiceCommand(transcript) {
             return;
         }
     }
+}
+
+function startGamesMusicNow() {
+    switchPlaylistTab("tab-juegos");
+    loadTrack("juegos", 0);
+    playCurrentTrack();
+    showToast("Voz: Juegos iniciados ▶️");
 }
 
 // Cuenta atrás para juegos
