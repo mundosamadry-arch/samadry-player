@@ -504,8 +504,8 @@ function initVoiceAssistant() {
     recognition = new SpeechRecognition();
     recognition.continuous = true;
     recognition.lang = 'es-ES';
-    recognition.interimResults = false;
-    
+    recognition.interimResults = true;  // Procesar texto mientras se habla
+
     recognition.onstart = () => {
         voiceActive = true;
         const voiceBtn = document.getElementById("voice-assistant-btn");
@@ -528,10 +528,11 @@ function initVoiceAssistant() {
     };
     
     recognition.onresult = (event) => {
-        const resultIndex = event.resultIndex;
-        const transcript = event.results[resultIndex][0].transcript.trim().toLowerCase();
-        console.log("Voz reconocida:", transcript);
-        processVoiceCommand(transcript);
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript.trim().toLowerCase();
+            console.log("Voz:", transcript, event.results[i].isFinal ? "(final)" : "(interim)");
+            processVoiceCommand(transcript);
+        }
     };
     
     recognition.onerror = (e) => {
@@ -574,14 +575,17 @@ function toggleVoiceAssistant(forceState) {
     }
 }
 
+let _lastCommandAt = 0;
+
 function processVoiceCommand(transcript) {
-    // DEBUG temporal: muestra el texto reconocido en pantalla
-    showToast(`🎙️ "${transcript}"`);
+    const now = Date.now();
+    if (now - _lastCommandAt < 2000) return; // Cooldown 2s entre comandos
 
     // --- Comandos directos (sin activador) ---
 
     // "stop" → pausa la canción
     if (transcript.includes("stop")) {
+        _lastCommandAt = now;
         pauseCurrentTrack();
         showToast("Voz: ⏸️ Stop");
         return;
@@ -589,6 +593,7 @@ function processVoiceCommand(transcript) {
 
     // "seguimos" / "sigue" → reanuda la canción
     if (transcript.includes("seguimos") || transcript.includes("sigue") || transcript.includes("continúa") || transcript.includes("continua")) {
+        _lastCommandAt = now;
         playCurrentTrack();
         showToast("Voz: ▶️ Seguimos");
         return;
@@ -596,12 +601,14 @@ function processVoiceCommand(transcript) {
 
     // "preparados listos" → carga y reproduce juegos directamente
     if (transcript.includes("preparados listos")) {
+        _lastCommandAt = now;
         startGamesMusicNow();
         return;
     }
 
     // "comienza la lista de juegos generica" → carga y reproduce juegos
     if (transcript.includes("comienza la lista de juegos") || transcript.includes("lista de juegos generica") || transcript.includes("empieza juegos")) {
+        _lastCommandAt = now;
         switchPlaylistTab("tab-juegos");
         loadTrack("juegos", 0);
         playCurrentTrack();
@@ -611,6 +618,7 @@ function processVoiceCommand(transcript) {
 
     // "momento tarta" → canción de cumpleaños
     if (transcript.includes("momento tarta") || transcript.includes("canción tarta") || transcript.includes("cancion tarta")) {
+        _lastCommandAt = now;
         loadTrack("tarta", 0);
         playCurrentTrack();
         showToast("Voz: 🎂 ¡Momento Tarta!");
@@ -619,6 +627,7 @@ function processVoiceCommand(transcript) {
 
     // "momento mundo" → canción especial Mundo Samadry
     if (transcript.includes("momento mundo")) {
+        _lastCommandAt = now;
         loadTrack("mundo_samadry", 0);
         playCurrentTrack();
         showToast("Voz: 🌟 ¡Mundo Samadry!");
