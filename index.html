@@ -55,35 +55,16 @@
         <!-- MAIN LAYOUT GRID -->
         <main class="main-grid">
             
-            <!-- COLUMNA IZQUIERDA: TEMPORIZADORES Y GUION -->
-            <section class="panel timer-panel" aria-label="Control de Tiempo del Show">
+            <!-- COLUMNA IZQUIERDA: ACCESOS RÁPIDOS Y GUION -->
+            <section class="panel timer-panel" aria-label="Accesos Rápidos">
                 <div class="panel-header">
-                    <h2>⏰ Control del Show</h2>
-                </div>
-                
-                <!-- Cronómetro General -->
-                <div class="main-chronometer">
-                    <div id="chrono-time">00:00:00</div>
-                    <div class="chrono-progress-bar">
-                        <div id="chrono-progress" class="chrono-progress-fill" style="width: 0%;"></div>
-                    </div>
-                    <div class="chrono-labels">
-                        <span id="chrono-status">Detenido</span>
-                        <span id="chrono-total-time">Total: 90:00</span>
-                    </div>
-                    <div class="chrono-controls">
-                        <button id="chrono-start-btn" class="btn btn-success">▶️ Iniciar Show</button>
-                        <button id="chrono-pause-btn" class="btn btn-warning" disabled>⏸️ Pausar</button>
-                        <button id="chrono-reset-btn" class="btn btn-danger">⏹️ Reiniciar</button>
-                    </div>
+                    <h2>🎵 Accesos Rápidos</h2>
                 </div>
 
-                <!-- Tramos del Show -->
-                <div class="show-segments-container">
-                    <h3>Tramos de Animación</h3>
-                    <div id="segments-list" class="segments-list">
-                        <!-- Generados dinámicamente por JS -->
-                    </div>
+                <!-- Botones de reproducción rápida -->
+                <div class="quick-play-buttons">
+                    <button id="btn-tarta" class="btn btn-quick-play">🎂 Tarta</button>
+                    <button id="btn-mundo-samadry" class="btn btn-quick-play">🌟 Mundo Samadry</button>
                 </div>
 
                 <!-- Notas y Guion en vivo -->
@@ -134,27 +115,18 @@
                 <!-- Listas de Reproducción por Pestañas -->
                 <div class="playlist-tabs-container">
                     <div class="playlist-tabs" role="tablist">
-                        <button id="tab-juegos" class="tab-btn active" role="tab" aria-selected="true" aria-controls="playlist-juegos">🏃 Juegos</button>
+                        <button id="tab-juegos" class="tab-btn active" role="tab" aria-selected="true" aria-controls="playlist-juegos">🏃 Juegos Generica</button>
                         <button id="tab-piratas" class="tab-btn" role="tab" aria-selected="false" aria-controls="playlist-piratas">🏴‍☠️ Piratas</button>
                         <button id="tab-exploradores" class="tab-btn" role="tab" aria-selected="false" aria-controls="playlist-exploradores">🧭 Exploradores</button>
                         <button id="tab-bluey" class="tab-btn" role="tab" aria-selected="false" aria-controls="playlist-bluey">💙 Bluey</button>
                         <button id="tab-kpop" class="tab-btn" role="tab" aria-selected="false" aria-controls="playlist-kpop">🎤 Kpop</button>
                         <button id="tab-spiderman" class="tab-btn" role="tab" aria-selected="false" aria-controls="playlist-spiderman">🕷️ Spiderman</button>
-                        <button id="tab-locales" class="tab-btn" role="tab" aria-selected="false" aria-controls="playlist-locales">📂 Mis MP3</button>
                     </div>
 
                     <div id="playlist-content" class="playlist-content">
                         <!-- La lista de canciones se inyecta dinámicamente con JS según la pestaña activa -->
                     </div>
                     
-                    <!-- Uploader para archivos locales (solo visible en pestaña Mis MP3) -->
-                    <div id="local-uploader-area" class="local-uploader-area hidden">
-                        <div class="upload-dropzone" id="drop-zone">
-                            <span class="upload-icon">📥</span>
-                            <p>Arrastra archivos de música (MP3/WAV) o haz clic para subir</p>
-                            <input type="file" id="local-file-input" multiple accept="audio/*" class="hidden-input">
-                        </div>
-                    </div>
                 </div>
             </section>
 

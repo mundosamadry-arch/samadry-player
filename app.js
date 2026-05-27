@@ -42,7 +42,25 @@ const PLAYLISTS = {
     bluey: [],
     kpop: [],
     spiderman: [],
-    locales: [] // Se llena con archivos subidos por el usuario
+    locales: [], // Se llena con archivos subidos por el usuario
+    tarta: [
+        {
+            title: "Canción de Tarta",
+            artist: "Mundo Samadry",
+            duration: "--:--",
+            url: "https://animacionesinfantilesmusicales.com/samadry-audio/especiales/tarta.mp3",
+            tag: "Especial"
+        }
+    ],
+    mundo_samadry: [
+        {
+            title: "Mundo Samadry",
+            artist: "Mundo Samadry",
+            duration: "--:--",
+            url: "https://animacionesinfantilesmusicales.com/samadry-audio/especiales/mundo-samadry.mp3",
+            tag: "Especial"
+        }
+    ]
 };
 
 // --- WEB AUDIO API: SYNTHESIZER FOR SOUNDBOARD EFFECTS ---
@@ -1383,7 +1401,8 @@ function setupShowTimers() {
     totalShowDurationMinutes = parseInt(durationSelect.value);
     
     // Establecer etiqueta de tiempo total
-    document.getElementById("chrono-total-time").textContent = `Total: ${totalShowDurationMinutes}:00`;
+    const chronoTotalEl = document.getElementById("chrono-total-time");
+    if (chronoTotalEl) chronoTotalEl.textContent = `Total: ${totalShowDurationMinutes}:00`;
     
     // Cargar tramos
     const rawSegments = SHOW_STRUCTURES[totalShowDurationMinutes.toString()];
@@ -1399,6 +1418,7 @@ function setupShowTimers() {
 
 function renderSegmentsList() {
     const listEl = document.getElementById("segments-list");
+    if (!listEl) return;
     listEl.innerHTML = "";
     
     segmentsData.forEach((seg, idx) => {
@@ -1468,11 +1488,13 @@ function updateChronometerUI() {
     const secs = showElapsedTime % 60;
     
     const timeStr = `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    document.getElementById("chrono-time").textContent = timeStr;
-    
+    const chronoTimeEl = document.getElementById("chrono-time");
+    if (chronoTimeEl) chronoTimeEl.textContent = timeStr;
+
     const totalSecs = totalShowDurationMinutes * 60;
     const progressPct = (showElapsedTime / totalSecs) * 100;
-    document.getElementById("chrono-progress").style.width = `${Math.min(100, progressPct)}%`;
+    const chronoProgressEl = document.getElementById("chrono-progress");
+    if (chronoProgressEl) chronoProgressEl.style.width = `${Math.min(100, progressPct)}%`;
 }
 
 function startShowTimer() {
@@ -1509,10 +1531,12 @@ function startShowTimer() {
         renderSegmentsList();
     }, 1000);
     
-    document.getElementById("chrono-start-btn").disabled = true;
-    document.getElementById("chrono-pause-btn").disabled = false;
-    document.getElementById("chrono-status").textContent = "En Vivo";
-    document.getElementById("chrono-status").style.color = "var(--neon-green-real)";
+    document.getElementById("chrono-start-btn")?.setAttribute("disabled", true);
+    document.getElementById("chrono-pause-btn")?.removeAttribute("disabled");
+    if (document.getElementById("chrono-status")) {
+        document.getElementById("chrono-status").textContent = "En Vivo";
+        document.getElementById("chrono-status").style.color = "var(--neon-green-real)";
+    }
     
     renderSegmentsList();
 }
@@ -1522,10 +1546,12 @@ function pauseShowTimer() {
         clearInterval(showTimerInterval);
         showTimerInterval = null;
     }
-    document.getElementById("chrono-start-btn").disabled = false;
-    document.getElementById("chrono-pause-btn").disabled = true;
-    document.getElementById("chrono-status").textContent = "Pausado";
-    document.getElementById("chrono-status").style.color = "var(--neon-yellow)";
+    document.getElementById("chrono-start-btn")?.removeAttribute("disabled");
+    document.getElementById("chrono-pause-btn")?.setAttribute("disabled", true);
+    if (document.getElementById("chrono-status")) {
+        document.getElementById("chrono-status").textContent = "Pausado";
+        document.getElementById("chrono-status").style.color = "var(--neon-yellow)";
+    }
     
     renderSegmentsList();
 }
@@ -1972,9 +1998,9 @@ document.getElementById("show-duration-select").addEventListener("change", () =>
 });
 
 // Botones del Cronómetro General
-document.getElementById("chrono-start-btn").addEventListener("click", startShowTimer);
-document.getElementById("chrono-pause-btn").addEventListener("click", pauseShowTimer);
-document.getElementById("chrono-reset-btn").addEventListener("click", resetShowTimer);
+document.getElementById("chrono-start-btn")?.addEventListener("click", startShowTimer);
+document.getElementById("chrono-pause-btn")?.addEventListener("click", pauseShowTimer);
+document.getElementById("chrono-reset-btn")?.addEventListener("click", resetShowTimer);
 
 // Botones del Reproductor Principal
 document.getElementById("player-play-btn").addEventListener("click", togglePlay);
@@ -2005,8 +2031,16 @@ document.getElementById("fullscreen-btn").addEventListener("click", () => {
 });
 
 // Pestañas de Playlist
-["juegos", "piratas", "exploradores", "bluey", "kpop", "spiderman", "locales"].forEach((key) => {
+["juegos", "piratas", "exploradores", "bluey", "kpop", "spiderman"].forEach((key) => {
     document.getElementById(`tab-${key}`).addEventListener("click", () => switchPlaylistTab(`tab-${key}`));
+});
+
+// Botones de acceso rápido
+document.getElementById("btn-tarta")?.addEventListener("click", () => {
+    loadTrack("tarta", 0);
+});
+document.getElementById("btn-mundo-samadry")?.addEventListener("click", () => {
+    loadTrack("mundo_samadry", 0);
 });
 
 // Asignar triggers a los botones de la Soundboard
