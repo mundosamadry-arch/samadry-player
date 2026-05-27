@@ -67,6 +67,7 @@ const PLAYLISTS = {
 let audioCtx = null;
 let analyserNode = null;
 let customSfxBlobs = {}; // Guarda sonidos MP3 cargados por usuario en la soundboard (IndexedDB / en memoria)
+let hostedSfxUrls  = {}; // Sonidos subidos al hosting (sfx-manifest.json) → disponibles para todos
 
 // --- SPOTIFY PREMIUM SDK INTEGRATION ---
 let spotifyPlayer = null;
@@ -1070,12 +1071,26 @@ const SYNTH_FUNCTIONS = {
 };
 
 function triggerSFX(soundId) {
+    // 1. Archivo local del animador (solo en este navegador)
     if (customSfxBlobs[soundId]) {
         playCustomSFXFile(customSfxBlobs[soundId]);
         return;
     }
+    // 2. Sonido subido al hosting (disponible para todos los animadores)
+    if (hostedSfxUrls[soundId]) {
+        playHostedSFXUrl(hostedSfxUrls[soundId]);
+        return;
+    }
+    // 3. Sintetizador offline (fallback siempre disponible)
     const fn = SYNTH_FUNCTIONS[soundId];
     if (fn) fn();
+}
+
+function playHostedSFXUrl(url) {
+    initAudioContext();
+    const audio = new Audio(url);
+    audio.volume = parseFloat(document.getElementById("master-volume-slider").value);
+    audio.play().catch(e => console.warn("Error reproduciendo SFX hosted:", e));
 }
 
 function playCustomSFXFile(fileBlob) {
@@ -1761,6 +1776,32 @@ function normalizeHostedTrack(rawTrack, playlistKey) {
         url: buildHostedAudioUrl(source),
         tag: rawTrack.tag || getPlaylistLabel(playlistKey)
     };
+}
+
+// Carga sfx-manifest.json del hosting → sonidos profesionales para todos los animadores
+// Formato del JSON: { "soundId": "https://.../sfx/nombre.mp3", ... }
+async function loadSFXManifest() {
+    const manifestUrl = `${AUDIO_LIBRARY_BASE_URL}sfx/sfx-manifest.json`;
+    try {
+        const res = await fetch(`${manifestUrl}?v=${Date.now()}`, { cache: "no-store" });
+        if (!res.ok) return; // Sin manifest → silencioso, usa sintetizador
+        const data = await res.json();
+        hostedSfxUrls = data;
+        const count = Object.keys(data).length;
+        if (count > 0) {
+            console.log(`SFX manifest cargado: ${count} sonido(s) profesionale(s) disponible(s).`);
+            // Marcar visualmente los pads que tienen sonido real del hosting
+            Object.keys(data).forEach(soundId => {
+                const pad = document.querySelector(`.sound-pad[data-sound="${soundId}"]`);
+                if (pad) {
+                    pad.title = "✅ Sonido profesional del hosting";
+                    pad.classList.add("has-hosted-sfx");
+                }
+            });
+        }
+    } catch (e) {
+        // Normal si el archivo no existe aún
+    }
 }
 
 async function loadHostedPlaylists() {
@@ -3023,6 +3064,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     // Cargar sonidos personalizados de IndexedDB
     loadCustomSFXFromDB();
     
+    // Cargar sonidos profesionales del hosting (sfx-manifest.json)
+    await loadSFXManifest();
+
     // Cargar listas del hosting si existe playlists.json
     await loadHostedPlaylists();
     
