@@ -581,7 +581,7 @@ function processVoiceCommand(transcript) {
     // --- Comandos directos (sin activador) ---
 
     // "stop" → pausa la canción
-    if (transcript.includes("stop") || transcript.includes("para") || transcript.includes("parar")) {
+    if (transcript.includes("stop")) {
         pauseCurrentTrack();
         showToast("Voz: ⏸️ Stop");
         return;
@@ -1272,6 +1272,8 @@ async function playCurrentTrack() {
             document.getElementById("track-disc").style.animationPlayState = "running";
             updateActiveSongHighlight();
         } catch (err) {
+            // AbortError ocurre cuando play() es interrumpido por pause() — no es un error real
+            if (err.name === "AbortError") return;
             const message = getNativePlayerErrorMessage(err);
             console.error("Fallo al reproducir:", err, nativePlayer.error);
             document.getElementById("audio-source-status").textContent = `Error: ${message}`;
