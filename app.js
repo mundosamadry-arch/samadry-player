@@ -1581,12 +1581,14 @@ function switchPlaylistTab(tabId) {
     const key = tabId.replace("tab-", "");
     currentPlaylistKey = key;
     
-    // Ocultar / Mostrar zona de subida local
+    // Ocultar / Mostrar zona de subida local (elemento opcional, puede no existir)
     const uploader = document.getElementById("local-uploader-area");
-    if (key === "locales") {
-        uploader.classList.remove("hidden");
-    } else {
-        uploader.classList.add("hidden");
+    if (uploader) {
+        if (key === "locales") {
+            uploader.classList.remove("hidden");
+        } else {
+            uploader.classList.add("hidden");
+        }
     }
     
     renderSongsList();
@@ -1682,33 +1684,35 @@ function updateActiveSongHighlight() {
 }
 
 
-// --- LOCAL AUDIO FILE UPLOADER ---
+// --- LOCAL AUDIO FILE UPLOADER (opcional, solo si existe el elemento en el HTML) ---
 const dropZone = document.getElementById("drop-zone");
 const localFileInput = document.getElementById("local-file-input");
 
-dropZone.addEventListener("click", () => localFileInput.click());
+if (dropZone && localFileInput) {
+    dropZone.addEventListener("click", () => localFileInput.click());
 
-localFileInput.addEventListener("change", (e) => {
-    handleLocalFiles(e.target.files);
-});
+    localFileInput.addEventListener("change", (e) => {
+        handleLocalFiles(e.target.files);
+    });
 
-// Drag & Drop
-dropZone.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    dropZone.classList.add("dragover");
-});
+    // Drag & Drop
+    dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropZone.classList.add("dragover");
+    });
 
-dropZone.addEventListener("dragleave", () => {
-    dropZone.classList.remove("dragover");
-});
+    dropZone.addEventListener("dragleave", () => {
+        dropZone.classList.remove("dragover");
+    });
 
-dropZone.addEventListener("drop", (e) => {
-    e.preventDefault();
-    dropZone.classList.remove("dragover");
-    if (e.dataTransfer.files.length > 0) {
-        handleLocalFiles(e.dataTransfer.files);
-    }
-});
+    dropZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropZone.classList.remove("dragover");
+        if (e.dataTransfer.files.length > 0) {
+            handleLocalFiles(e.dataTransfer.files);
+        }
+    });
+}
 
 function handleLocalFiles(files) {
     const skippedFiles = [];
