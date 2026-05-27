@@ -10,7 +10,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="index.css?v=11">
+    <link rel="stylesheet" id="main-css" href="index.css">
+    <script>document.getElementById('main-css').href='index.css?v='+Date.now();</script>
 </head>
 <body>
     <div class="glass-bg"></div>
@@ -266,7 +267,7 @@
 
     <!-- SPOTIFY WEB PLAYBACK SDK -->
     <script src="https://sdk.scdn.co/spotify-player.js"></script>
-    <!-- JS MAIN SCRIPT -->
-    <script src="app.js?v=11"></script>
+    <!-- JS MAIN SCRIPT: timestamp auto-generado para evitar caché -->
+    <script>document.write('<scr'+'ipt src="app.js?v='+Date.now()+'"></scr'+'ipt>');</script>
 </body>
 </html>
