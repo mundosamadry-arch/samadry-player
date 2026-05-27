@@ -134,83 +134,20 @@
             <!-- COLUMNA DERECHA: BANCO DE SONIDOS (SOUNDBOARD) -->
             <section class="panel soundboard-panel" aria-label="Banco de Efectos de Sonido">
                 <div class="panel-header">
-                    <h2>🎉 Banco de Sonidos (Soundboard)</h2>
+                    <h2>🎉 Banco de Sonidos <span id="soundboard-theme-label" class="soundboard-theme-badge">🎉 Genérico</span></h2>
                     <span class="hotkey-tip">Atajos: Teclas [1-9]</span>
                 </div>
-                
-                <div class="soundboard-grid" id="soundboard-grid">
-                    <!-- Botón 1: Aplausos -->
-                    <button class="sound-pad pad-pink" data-sound="applause" data-key="1">
-                        <span class="pad-key">1</span>
-                        <span class="pad-emoji">👏</span>
-                        <span class="pad-name">Aplausos</span>
-                    </button>
-                    <!-- Botón 2: Redoble -->
-                    <button class="sound-pad pad-purple" data-sound="drumroll" data-key="2">
-                        <span class="pad-key">2</span>
-                        <span class="pad-emoji">🥁</span>
-                        <span class="pad-name">Redoble</span>
-                    </button>
-                    <!-- Botón 3: Magia -->
-                    <button class="sound-pad pad-cyan" data-sound="magic" data-key="3">
-                        <span class="pad-key">3</span>
-                        <span class="pad-emoji">🪄</span>
-                        <span class="pad-name">Mágico</span>
-                    </button>
-                    <!-- Botón 4: Bocina Cómica -->
-                    <button class="sound-pad pad-yellow" data-sound="horn" data-key="4">
-                        <span class="pad-key">4</span>
-                        <span class="pad-emoji">🎺</span>
-                        <span class="pad-name">Bocina</span>
-                    </button>
-                    <!-- Botón 5: Risas Niños -->
-                    <button class="sound-pad pad-green" data-sound="laughs" data-key="5">
-                        <span class="pad-key">5</span>
-                        <span class="pad-emoji">😆</span>
-                        <span class="pad-name">Risas</span>
-                    </button>
-                    <!-- Botón 6: Suspenso -->
-                    <button class="sound-pad pad-orange" data-sound="suspense" data-key="6">
-                        <span class="pad-key">6</span>
-                        <span class="pad-emoji">🕵️</span>
-                        <span class="pad-name">Suspenso</span>
-                    </button>
-                    <!-- Botón 7: Ding/Éxito -->
-                    <button class="sound-pad pad-blue" data-sound="ding" data-key="7">
-                        <span class="pad-key">7</span>
-                        <span class="pad-emoji">🔔</span>
-                        <span class="pad-name">Ding!</span>
-                    </button>
-                    <!-- Botón 8: Error/Fallo -->
-                    <button class="sound-pad pad-red" data-sound="error" data-key="8">
-                        <span class="pad-key">8</span>
-                        <span class="pad-emoji">💥</span>
-                        <span class="pad-name">Fallo</span>
-                    </button>
-                    <!-- Botón 9: Silbato de Árbitro -->
-                    <button class="sound-pad pad-violet" data-sound="whistle" data-key="9">
-                        <span class="pad-key">9</span>
-                        <span class="pad-emoji">🗣️</span>
-                        <span class="pad-name">Silbato</span>
-                    </button>
-                </div>
+
+                <!-- Los botones se generan dinámicamente con JS según la playlist activa -->
+                <div class="soundboard-grid" id="soundboard-grid"></div>
 
                 <!-- Custom Soundboard Binder -->
                 <div class="custom-sfx-binder">
                     <h3>Personalizar Banco de Sonidos</h3>
                     <p class="section-desc">¿Quieres cambiar algún sonido por un MP3 propio? Selecciónalo y carga tu archivo:</p>
                     <div class="binder-controls">
-                        <select id="sfx-select-to-bind" class="custom-select">
-                            <option value="applause">Reemplazar 1. Aplausos 👏</option>
-                            <option value="drumroll">Reemplazar 2. Redoble 🥁</option>
-                            <option value="magic">Reemplazar 3. Mágico 🪄</option>
-                            <option value="horn">Reemplazar 4. Bocina 🎺</option>
-                            <option value="laughs">Reemplazar 5. Risas 😆</option>
-                            <option value="suspense">Reemplazar 6. Suspenso 🕵️</option>
-                            <option value="ding">Reemplazar 7. Ding! 🔔</option>
-                            <option value="error">Reemplazar 8. Fallo 💥</option>
-                            <option value="whistle">Reemplazar 9. Silbato 🗣️</option>
-                        </select>
+                        <!-- El select se rellena dinámicamente con JS -->
+                        <select id="sfx-select-to-bind" class="custom-select"></select>
                         <label for="sfx-file-input" class="btn btn-secondary">📁 Elegir Audio</label>
                         <input type="file" id="sfx-file-input" accept="audio/*" class="hidden-input">
                         <button id="sfx-reset-all-btn" class="btn btn-outline-danger" title="Restaurar valores de fábrica">🔄 Reset</button>

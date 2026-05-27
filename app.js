@@ -431,44 +431,651 @@ function playWhistleSynth() {
     osc.stop(now + duration);
 }
 
+// ============================================================
+// GENERIC NEW SOUNDS (positions 6-9)
+// ============================================================
+
+// 6. Fanfarria (🏆) - Trompa triunfal ascendente
+function playFanfarriaSynth() {
+    initAudioContext();
+    const now = audioCtx.currentTime;
+    const notes    = [392, 392, 392, 523.25, 659.25, 523.25, 783.99];
+    const durations= [0.12,0.12,0.12,0.15,   0.15,   0.15,   0.45  ];
+    let t = 0;
+    notes.forEach((freq, idx) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "square";
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0, now + t);
+        gain.gain.linearRampToValueAtTime(0.25, now + t + 0.02);
+        gain.gain.setValueAtTime(0.25, now + t + durations[idx] - 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + t + durations[idx]);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(now + t); osc.stop(now + t + durations[idx] + 0.02);
+        t += durations[idx];
+    });
+}
+
+// 7. Power-Up (⭐) - Arpegio ascendente de videojuego 8-bit
+function playPowerUpSynth() {
+    initAudioContext();
+    const now = audioCtx.currentTime;
+    const notes = [262, 330, 392, 523, 659, 784, 1047, 1319];
+    notes.forEach((freq, idx) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "square";
+        osc.frequency.setValueAtTime(freq, now + idx * 0.065);
+        osc.frequency.linearRampToValueAtTime(freq * 1.05, now + idx * 0.065 + 0.06);
+        gain.gain.setValueAtTime(0.18, now + idx * 0.065);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.065 + 0.12);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(now + idx * 0.065); osc.stop(now + idx * 0.065 + 0.14);
+    });
+}
+
+// 8. Explosión (💥) - Boom grave + ráfaga de ruido
+function playExplosionSynth() {
+    initAudioContext();
+    const now = audioCtx.currentTime;
+    const duration = 1.2;
+    const bufferSize = audioCtx.sampleRate * duration;
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = buffer;
+    const noiseFilter = audioCtx.createBiquadFilter();
+    noiseFilter.type = "lowpass"; noiseFilter.frequency.setValueAtTime(800, now);
+    noiseFilter.frequency.exponentialRampToValueAtTime(80, now + duration);
+    const noiseGain = audioCtx.createGain();
+    noiseGain.gain.setValueAtTime(0.7, now); noiseGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+    noise.connect(noiseFilter); noiseFilter.connect(noiseGain); noiseGain.connect(audioCtx.destination);
+    noise.start(now);
+    const kick = audioCtx.createOscillator();
+    const kickGain = audioCtx.createGain();
+    kick.type = "sine"; kick.frequency.setValueAtTime(120, now);
+    kick.frequency.exponentialRampToValueAtTime(20, now + 0.5);
+    kickGain.gain.setValueAtTime(0.9, now); kickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+    kick.connect(kickGain); kickGain.connect(audioCtx.destination);
+    kick.start(now); kick.stop(now + 0.7);
+}
+
+// 9. Round (🔔) - Campana de combate
+function playRoundSynth() {
+    initAudioContext();
+    const now = audioCtx.currentTime;
+    [660, 1320, 1980].forEach((freq, idx) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine"; osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.35 / (idx + 1), now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 2.5 - idx * 0.3);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(now); osc.stop(now + 2.6);
+    });
+}
+
+// ============================================================
+// THEMATIC SOUNDS — PIRATAS 🏴‍☠️
+// ============================================================
+function playCanonSynth() {
+    initAudioContext(); const now = audioCtx.currentTime; const dur = 1.0;
+    const buf = audioCtx.createBuffer(1, audioCtx.sampleRate * dur, audioCtx.sampleRate);
+    const d = buf.getChannelData(0); for (let i = 0; i < buf.length; i++) d[i] = Math.random()*2-1;
+    const noise = audioCtx.createBufferSource(); noise.buffer = buf;
+    const f = audioCtx.createBiquadFilter(); f.type="lowpass"; f.frequency.value=600;
+    const g = audioCtx.createGain(); g.gain.setValueAtTime(0.8,now); g.gain.exponentialRampToValueAtTime(0.001,now+dur);
+    noise.connect(f); f.connect(g); g.connect(audioCtx.destination); noise.start(now);
+    const kick = audioCtx.createOscillator(); const kg = audioCtx.createGain();
+    kick.type="sine"; kick.frequency.setValueAtTime(80,now); kick.frequency.exponentialRampToValueAtTime(10,now+0.4);
+    kg.gain.setValueAtTime(1.0,now); kg.gain.exponentialRampToValueAtTime(0.001,now+0.5);
+    kick.connect(kg); kg.connect(audioCtx.destination); kick.start(now); kick.stop(now+0.6);
+}
+function playParrotSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    [0, 0.22, 0.44].forEach((t) => {
+        const osc = audioCtx.createOscillator(); const g = audioCtx.createGain();
+        osc.type="sawtooth"; osc.frequency.setValueAtTime(1200+Math.random()*400, now+t);
+        osc.frequency.exponentialRampToValueAtTime(800, now+t+0.16);
+        g.gain.setValueAtTime(0.22, now+t); g.gain.exponentialRampToValueAtTime(0.001, now+t+0.19);
+        osc.connect(g); g.connect(audioCtx.destination); osc.start(now+t); osc.stop(now+t+0.22);
+    });
+}
+function playSwordSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator(); const g = audioCtx.createGain();
+    osc.type="sawtooth"; osc.frequency.setValueAtTime(3000,now); osc.frequency.exponentialRampToValueAtTime(600,now+0.3);
+    g.gain.setValueAtTime(0.3,now); g.gain.exponentialRampToValueAtTime(0.001,now+0.35);
+    osc.connect(g); g.connect(audioCtx.destination); osc.start(now); osc.stop(now+0.4);
+}
+function playAbordajeSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    [196,220,247,294].forEach((freq,idx) => {
+        const osc = audioCtx.createOscillator(); const g = audioCtx.createGain();
+        osc.type="sawtooth"; osc.frequency.value=freq;
+        g.gain.setValueAtTime(0,now+idx*0.1); g.gain.linearRampToValueAtTime(0.3,now+idx*0.1+0.05);
+        g.gain.exponentialRampToValueAtTime(0.001,now+idx*0.1+0.16);
+        osc.connect(g); g.connect(audioCtx.destination); osc.start(now+idx*0.1); osc.stop(now+idx*0.1+0.2);
+    });
+}
+function playWavesSynth() {
+    initAudioContext(); const now = audioCtx.currentTime; const dur=3.0;
+    const buf = audioCtx.createBuffer(1, audioCtx.sampleRate*dur, audioCtx.sampleRate);
+    const d = buf.getChannelData(0); for (let i=0;i<buf.length;i++) d[i]=Math.random()*2-1;
+    const noise = audioCtx.createBufferSource(); noise.buffer=buf;
+    const f = audioCtx.createBiquadFilter(); f.type="bandpass"; f.frequency.value=600; f.Q.value=0.5;
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0.04,now); g.gain.linearRampToValueAtTime(0.12,now+0.8);
+    g.gain.linearRampToValueAtTime(0.03,now+1.6); g.gain.linearRampToValueAtTime(0.12,now+2.4);
+    g.gain.exponentialRampToValueAtTime(0.001,now+dur);
+    noise.connect(f); f.connect(g); g.connect(audioCtx.destination); noise.start(now);
+}
+function playTreasureSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    [1047,1319,1568,2093,1568,2093,1319].forEach((freq,idx) => {
+        const osc = audioCtx.createOscillator(); const g = audioCtx.createGain();
+        osc.type="triangle"; osc.frequency.value=freq;
+        g.gain.setValueAtTime(0.15,now+idx*0.07); g.gain.exponentialRampToValueAtTime(0.001,now+idx*0.07+0.22);
+        osc.connect(g); g.connect(audioCtx.destination); osc.start(now+idx*0.07); osc.stop(now+idx*0.07+0.26);
+    });
+}
+function playAlarmPirataSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    for (let i=0;i<6;i++) {
+        const osc = audioCtx.createOscillator(); const g = audioCtx.createGain();
+        osc.type="square"; osc.frequency.value = i%2===0 ? 880 : 660;
+        g.gain.setValueAtTime(0.22,now+i*0.12); g.gain.exponentialRampToValueAtTime(0.001,now+i*0.12+0.1);
+        osc.connect(g); g.connect(audioCtx.destination); osc.start(now+i*0.12); osc.stop(now+i*0.12+0.13);
+    }
+}
+function playVictoriaPiratasSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    const notes=[523,659,784,1047]; const times=[0,0.15,0.3,0.5]; const durs=[0.12,0.12,0.12,0.7];
+    notes.forEach((freq,idx) => {
+        const osc=audioCtx.createOscillator(); const g=audioCtx.createGain();
+        osc.type="square"; osc.frequency.value=freq;
+        g.gain.setValueAtTime(0.3,now+times[idx]); g.gain.exponentialRampToValueAtTime(0.001,now+times[idx]+durs[idx]);
+        osc.connect(g); g.connect(audioCtx.destination); osc.start(now+times[idx]); osc.stop(now+times[idx]+durs[idx]+0.05);
+    });
+}
+function playSharkSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    let interval=0.5, t=0;
+    for (let beat=0;beat<9;beat++) {
+        const osc=audioCtx.createOscillator(); const g=audioCtx.createGain();
+        osc.type="sine"; osc.frequency.value = beat%2===0 ? 98 : 110;
+        g.gain.setValueAtTime(0,now+t); g.gain.linearRampToValueAtTime(0.3,now+t+0.05);
+        g.gain.exponentialRampToValueAtTime(0.001,now+t+interval-0.03);
+        osc.connect(g); g.connect(audioCtx.destination); osc.start(now+t); osc.stop(now+t+interval);
+        t += interval; interval = Math.max(0.09, interval*0.86);
+    }
+}
+
+// ============================================================
+// THEMATIC SOUNDS — EXPLORADORES 🧭
+// ============================================================
+function playJungleSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    [0, 0.15, 0.32, 0.5, 0.65, 0.82].forEach((t) => {
+        const osc=audioCtx.createOscillator(); const g=audioCtx.createGain();
+        osc.type="sine"; const base=2000+Math.random()*1500;
+        osc.frequency.setValueAtTime(base,now+t); osc.frequency.exponentialRampToValueAtTime(base*1.35,now+t+0.07);
+        g.gain.setValueAtTime(0.12,now+t); g.gain.exponentialRampToValueAtTime(0.001,now+t+0.09);
+        osc.connect(g); g.connect(audioCtx.destination); osc.start(now+t); osc.stop(now+t+0.11);
+    });
+}
+function playAdventureHornSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    [261,329,392,523].forEach((freq,idx) => {
+        const osc=audioCtx.createOscillator(); const g=audioCtx.createGain();
+        osc.type="sawtooth"; osc.frequency.value=freq;
+        g.gain.setValueAtTime(0,now+idx*0.2); g.gain.linearRampToValueAtTime(0.25,now+idx*0.2+0.06);
+        g.gain.exponentialRampToValueAtTime(0.001,now+idx*0.2+0.22);
+        osc.connect(g); g.connect(audioCtx.destination); osc.start(now+idx*0.2); osc.stop(now+idx*0.2+0.26);
+    });
+}
+function playDiscoverySynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    [523,659,784,1047,1319].forEach((freq,idx) => {
+        const osc=audioCtx.createOscillator(); const g=audioCtx.createGain();
+        osc.type="triangle";
+        osc.frequency.setValueAtTime(freq*0.8,now+idx*0.09); osc.frequency.exponentialRampToValueAtTime(freq*1.2,now+idx*0.09+0.05);
+        g.gain.setValueAtTime(0.15,now+idx*0.09); g.gain.exponentialRampToValueAtTime(0.001,now+idx*0.09+0.3);
+        osc.connect(g); g.connect(audioCtx.destination); osc.start(now+idx*0.09); osc.stop(now+idx*0.09+0.35);
+    });
+}
+function playCompassSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    for (let i=0;i<8;i++) {
+        const osc=audioCtx.createOscillator(); const g=audioCtx.createGain();
+        osc.type="square"; osc.frequency.value=i%2===0?1200:900;
+        g.gain.setValueAtTime(0.14,now+i*0.1); g.gain.exponentialRampToValueAtTime(0.001,now+i*0.1+0.04);
+        osc.connect(g); g.connect(audioCtx.destination); osc.start(now+i*0.1); osc.stop(now+i*0.1+0.05);
+    }
+}
+function playBeastRoarSynth() {
+    initAudioContext(); const now = audioCtx.currentTime; const dur=1.5;
+    const buf=audioCtx.createBuffer(1,audioCtx.sampleRate*dur,audioCtx.sampleRate);
+    const d=buf.getChannelData(0); for (let i=0;i<buf.length;i++) d[i]=Math.random()*2-1;
+    const noise=audioCtx.createBufferSource(); noise.buffer=buf;
+    const f=audioCtx.createBiquadFilter(); f.type="bandpass"; f.frequency.setValueAtTime(300,now); f.Q.value=3;
+    f.frequency.linearRampToValueAtTime(80,now+dur*0.7);
+    const g=audioCtx.createGain();
+    g.gain.setValueAtTime(0,now); g.gain.linearRampToValueAtTime(0.55,now+0.15);
+    g.gain.linearRampToValueAtTime(0.4,now+dur*0.6); g.gain.exponentialRampToValueAtTime(0.001,now+dur);
+    noise.connect(f); f.connect(g); g.connect(audioCtx.destination); noise.start(now);
+}
+function playCaveDripSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    [0, 0.8, 1.6].forEach((t) => {
+        const osc=audioCtx.createOscillator(); const g=audioCtx.createGain();
+        osc.type="sine"; osc.frequency.setValueAtTime(1200,now+t); osc.frequency.exponentialRampToValueAtTime(400,now+t+0.25);
+        g.gain.setValueAtTime(0.2,now+t); g.gain.exponentialRampToValueAtTime(0.001,now+t+0.32);
+        osc.connect(g); g.connect(audioCtx.destination); osc.start(now+t); osc.stop(now+t+0.36);
+    });
+}
+function playVictoriaExplorSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    const n=[392,523,659,784,784]; const t=[0,0.12,0.24,0.36,0.5]; const dur=[0.1,0.1,0.1,0.1,0.55];
+    n.forEach((freq,idx) => {
+        const osc=audioCtx.createOscillator(); const g=audioCtx.createGain();
+        osc.type="sawtooth"; osc.frequency.value=freq;
+        g.gain.setValueAtTime(0.28,now+t[idx]); g.gain.exponentialRampToValueAtTime(0.001,now+t[idx]+dur[idx]);
+        osc.connect(g); g.connect(audioCtx.destination); osc.start(now+t[idx]); osc.stop(now+t[idx]+dur[idx]+0.05);
+    });
+}
+function playAlertExplorSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    for (let i=0;i<4;i++) {
+        const osc=audioCtx.createOscillator(); const g=audioCtx.createGain();
+        osc.type="square"; osc.frequency.value=1047;
+        g.gain.setValueAtTime(0.22,now+i*0.18); g.gain.exponentialRampToValueAtTime(0.001,now+i*0.18+0.15);
+        osc.connect(g); g.connect(audioCtx.destination); osc.start(now+i*0.18); osc.stop(now+i*0.18+0.17);
+    }
+}
+function playMarchSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    [1,0,1,0,1,1,0,1].forEach((hit,idx) => {
+        if (!hit) return;
+        const sz=Math.floor(audioCtx.sampleRate*0.08);
+        const buf=audioCtx.createBuffer(1,sz,audioCtx.sampleRate);
+        const d=buf.getChannelData(0); for (let i=0;i<sz;i++) d[i]=Math.random()*2-1;
+        const noise=audioCtx.createBufferSource(); noise.buffer=buf;
+        const f=audioCtx.createBiquadFilter(); f.type="bandpass"; f.frequency.value=800;
+        const g=audioCtx.createGain(); g.gain.setValueAtTime(0.3,now+idx*0.12); g.gain.exponentialRampToValueAtTime(0.001,now+idx*0.12+0.07);
+        noise.connect(f); f.connect(g); g.connect(audioCtx.destination); noise.start(now+idx*0.12);
+    });
+}
+
+// ============================================================
+// THEMATIC SOUNDS — BLUEY 💙
+// ============================================================
+function playWoofSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    const sz=Math.floor(audioCtx.sampleRate*0.3);
+    const buf=audioCtx.createBuffer(1,sz,audioCtx.sampleRate);
+    const d=buf.getChannelData(0); for (let i=0;i<sz;i++) d[i]=Math.random()*2-1;
+    const noise=audioCtx.createBufferSource(); noise.buffer=buf;
+    const f=audioCtx.createBiquadFilter(); f.type="bandpass"; f.frequency.setValueAtTime(500,now); f.Q.value=4;
+    f.frequency.exponentialRampToValueAtTime(200,now+0.25);
+    const g=audioCtx.createGain(); g.gain.setValueAtTime(0.55,now); g.gain.exponentialRampToValueAtTime(0.001,now+0.32);
+    noise.connect(f); f.connect(g); g.connect(audioCtx.destination); noise.start(now);
+}
+function playHappyBlueSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    [523,659,784,659,784,1047].forEach((freq,idx) => {
+        const osc=audioCtx.createOscillator(); const g=audioCtx.createGain();
+        osc.type="triangle"; osc.frequency.value=freq;
+        g.gain.setValueAtTime(0.15,now+idx*0.1); g.gain.exponentialRampToValueAtTime(0.001,now+idx*0.1+0.22);
+        osc.connect(g); g.connect(audioCtx.destination); osc.start(now+idx*0.1); osc.stop(now+idx*0.1+0.25);
+    });
+}
+function playSurpriseBlueSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    const osc=audioCtx.createOscillator(); const g=audioCtx.createGain();
+    osc.type="sine"; osc.frequency.setValueAtTime(300,now); osc.frequency.exponentialRampToValueAtTime(1800,now+0.25);
+    g.gain.setValueAtTime(0.3,now); g.gain.exponentialRampToValueAtTime(0.001,now+0.35);
+    osc.connect(g); g.connect(audioCtx.destination); osc.start(now); osc.stop(now+0.4);
+}
+function playDanceBlueSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    [0,0.15,0.3,0.6,0.75,0.9].forEach((t,idx) => {
+        const osc=audioCtx.createOscillator(); const g=audioCtx.createGain();
+        osc.type="sine"; osc.frequency.value=idx%2===0?200:280;
+        g.gain.setValueAtTime(0.4,now+t); g.gain.exponentialRampToValueAtTime(0.001,now+t+0.12);
+        osc.connect(g); g.connect(audioCtx.destination); osc.start(now+t); osc.stop(now+t+0.14);
+    });
+}
+function playCricketSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    for (let i=0;i<12;i++) {
+        const osc=audioCtx.createOscillator(); const g=audioCtx.createGain();
+        osc.type="sine"; osc.frequency.value=4000+i%3*200;
+        g.gain.setValueAtTime(0.08,now+i*0.07); g.gain.exponentialRampToValueAtTime(0.001,now+i*0.07+0.05);
+        osc.connect(g); g.connect(audioCtx.destination); osc.start(now+i*0.07); osc.stop(now+i*0.07+0.06);
+    }
+}
+function playFluteBlueSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    [659,784,880,784,659,784].forEach((freq,idx) => {
+        const osc=audioCtx.createOscillator(); const g=audioCtx.createGain();
+        osc.type="sine"; osc.frequency.value=freq;
+        g.gain.setValueAtTime(0,now+idx*0.15); g.gain.linearRampToValueAtTime(0.12,now+idx*0.15+0.04);
+        g.gain.setValueAtTime(0.12,now+idx*0.15+0.11); g.gain.exponentialRampToValueAtTime(0.001,now+idx*0.15+0.15);
+        osc.connect(g); g.connect(audioCtx.destination); osc.start(now+idx*0.15); osc.stop(now+idx*0.15+0.18);
+    });
+}
+function playGameBlueSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    [523,784,523,659,523,880].forEach((freq,idx) => {
+        const osc=audioCtx.createOscillator(); const g=audioCtx.createGain();
+        osc.type="square"; osc.frequency.value=freq;
+        g.gain.setValueAtTime(0.12,now+idx*0.08); g.gain.exponentialRampToValueAtTime(0.001,now+idx*0.08+0.07);
+        osc.connect(g); g.connect(audioCtx.destination); osc.start(now+idx*0.08); osc.stop(now+idx*0.08+0.09);
+    });
+}
+function playFriendSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    [523,659,784].forEach((freq) => {
+        const osc=audioCtx.createOscillator(); const g=audioCtx.createGain();
+        osc.type="triangle"; osc.frequency.value=freq;
+        g.gain.setValueAtTime(0,now); g.gain.linearRampToValueAtTime(0.1,now+0.05);
+        g.gain.setValueAtTime(0.1,now+0.6); g.gain.exponentialRampToValueAtTime(0.001,now+1.2);
+        osc.connect(g); g.connect(audioCtx.destination); osc.start(now); osc.stop(now+1.3);
+    });
+}
+function playFamilySynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    [392,523,659,523,392].forEach((freq,idx) => {
+        const osc=audioCtx.createOscillator(); const g=audioCtx.createGain();
+        osc.type="triangle"; osc.frequency.value=freq;
+        g.gain.setValueAtTime(0,now+idx*0.18); g.gain.linearRampToValueAtTime(0.13,now+idx*0.18+0.05);
+        g.gain.setValueAtTime(0.13,now+idx*0.18+0.14); g.gain.exponentialRampToValueAtTime(0.001,now+idx*0.18+0.2);
+        osc.connect(g); g.connect(audioCtx.destination); osc.start(now+idx*0.18); osc.stop(now+idx*0.18+0.25);
+    });
+}
+
+// ============================================================
+// THEMATIC SOUNDS — KPOP 🎤
+// ============================================================
+function playBeatDropSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    const osc=audioCtx.createOscillator(); const kg=audioCtx.createGain();
+    osc.type="sine"; osc.frequency.setValueAtTime(200,now); osc.frequency.exponentialRampToValueAtTime(40,now+0.35);
+    kg.gain.setValueAtTime(1.0,now); kg.gain.exponentialRampToValueAtTime(0.001,now+0.4);
+    osc.connect(kg); kg.connect(audioCtx.destination); osc.start(now); osc.stop(now+0.45);
+    const sz=Math.floor(audioCtx.sampleRate*0.1);
+    const buf=audioCtx.createBuffer(1,sz,audioCtx.sampleRate);
+    const d=buf.getChannelData(0); for (let i=0;i<sz;i++) d[i]=Math.random()*2-1;
+    const noise=audioCtx.createBufferSource(); noise.buffer=buf;
+    const ng=audioCtx.createGain(); ng.gain.setValueAtTime(0.4,now+0.35); ng.gain.exponentialRampToValueAtTime(0.001,now+0.45);
+    noise.connect(ng); ng.connect(audioCtx.destination); noise.start(now+0.35);
+}
+function playKCheerSynth() {
+    initAudioContext(); const now = audioCtx.currentTime; const dur=1.5;
+    const buf=audioCtx.createBuffer(1,audioCtx.sampleRate*dur,audioCtx.sampleRate);
+    const d=buf.getChannelData(0); for (let i=0;i<buf.length;i++) d[i]=Math.random()*2-1;
+    const noise=audioCtx.createBufferSource(); noise.buffer=buf;
+    const f=audioCtx.createBiquadFilter(); f.type="bandpass"; f.frequency.value=2000; f.Q.value=0.5;
+    const g=audioCtx.createGain();
+    g.gain.setValueAtTime(0,now); g.gain.linearRampToValueAtTime(0.22,now+0.3);
+    g.gain.setValueAtTime(0.22,now+dur-0.3); g.gain.exponentialRampToValueAtTime(0.001,now+dur);
+    noise.connect(f); f.connect(g); g.connect(audioCtx.destination); noise.start(now);
+}
+function playKCymbalSynth() {
+    initAudioContext(); const now = audioCtx.currentTime; const dur=1.2;
+    const buf=audioCtx.createBuffer(1,audioCtx.sampleRate*dur,audioCtx.sampleRate);
+    const d=buf.getChannelData(0); for (let i=0;i<buf.length;i++) d[i]=Math.random()*2-1;
+    const noise=audioCtx.createBufferSource(); noise.buffer=buf;
+    const f=audioCtx.createBiquadFilter(); f.type="highpass"; f.frequency.value=4000;
+    const g=audioCtx.createGain(); g.gain.setValueAtTime(0.5,now); g.gain.exponentialRampToValueAtTime(0.001,now+dur);
+    noise.connect(f); f.connect(g); g.connect(audioCtx.destination); noise.start(now);
+}
+function playKSynthLeadSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    const osc=audioCtx.createOscillator(); const f=audioCtx.createBiquadFilter(); const g=audioCtx.createGain();
+    osc.type="sawtooth";
+    osc.frequency.setValueAtTime(440,now); osc.frequency.setValueAtTime(880,now+0.2); osc.frequency.setValueAtTime(660,now+0.35);
+    f.type="lowpass"; f.frequency.setValueAtTime(3000,now); f.frequency.exponentialRampToValueAtTime(800,now+0.5);
+    g.gain.setValueAtTime(0.3,now); g.gain.exponentialRampToValueAtTime(0.001,now+0.6);
+    osc.connect(f); f.connect(g); g.connect(audioCtx.destination); osc.start(now); osc.stop(now+0.65);
+}
+function playKDropSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    const osc=audioCtx.createOscillator(); const f=audioCtx.createBiquadFilter(); const g=audioCtx.createGain();
+    osc.type="sawtooth"; osc.frequency.value=80;
+    f.type="lowpass";
+    f.frequency.setValueAtTime(2000,now); f.frequency.exponentialRampToValueAtTime(200,now+0.15);
+    f.frequency.exponentialRampToValueAtTime(1500,now+0.3); f.frequency.exponentialRampToValueAtTime(200,now+0.45);
+    g.gain.setValueAtTime(0.6,now); g.gain.exponentialRampToValueAtTime(0.001,now+0.7);
+    osc.connect(f); f.connect(g); g.connect(audioCtx.destination); osc.start(now); osc.stop(now+0.75);
+}
+function playAirHornKSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    const o1=audioCtx.createOscillator(); const o2=audioCtx.createOscillator(); const g=audioCtx.createGain();
+    o1.type="sawtooth"; o1.frequency.value=174; o2.type="sawtooth"; o2.frequency.value=178;
+    g.gain.setValueAtTime(0,now); g.gain.linearRampToValueAtTime(0.5,now+0.05);
+    g.gain.setValueAtTime(0.5,now+0.6); g.gain.exponentialRampToValueAtTime(0.001,now+0.8);
+    o1.connect(g); o2.connect(g); g.connect(audioCtx.destination);
+    o1.start(now); o2.start(now); o1.stop(now+0.85); o2.stop(now+0.85);
+}
+function playWoahKSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    const osc=audioCtx.createOscillator(); const g=audioCtx.createGain();
+    osc.type="sine"; osc.frequency.setValueAtTime(200,now);
+    osc.frequency.exponentialRampToValueAtTime(1000,now+0.3); osc.frequency.setValueAtTime(1000,now+0.32);
+    osc.frequency.exponentialRampToValueAtTime(600,now+0.6);
+    g.gain.setValueAtTime(0.35,now); g.gain.exponentialRampToValueAtTime(0.001,now+0.7);
+    osc.connect(g); g.connect(audioCtx.destination); osc.start(now); osc.stop(now+0.75);
+}
+function playKCrowdSynth() {
+    // Variante de cheer con ataque más rápido
+    initAudioContext(); const now = audioCtx.currentTime; const dur=1.8;
+    const buf=audioCtx.createBuffer(1,audioCtx.sampleRate*dur,audioCtx.sampleRate);
+    const d=buf.getChannelData(0); for (let i=0;i<buf.length;i++) d[i]=Math.random()*2-1;
+    const noise=audioCtx.createBufferSource(); noise.buffer=buf;
+    const f=audioCtx.createBiquadFilter(); f.type="bandpass"; f.frequency.value=1800; f.Q.value=0.4;
+    const g=audioCtx.createGain();
+    g.gain.setValueAtTime(0,now); g.gain.linearRampToValueAtTime(0.28,now+0.1);
+    g.gain.setValueAtTime(0.28,now+dur-0.3); g.gain.exponentialRampToValueAtTime(0.001,now+dur);
+    noise.connect(f); f.connect(g); g.connect(audioCtx.destination); noise.start(now);
+}
+function playFanchantSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    [0,0.15,0.3,0.6,0.75,0.9].forEach((t) => {
+        const sz=Math.floor(audioCtx.sampleRate*0.05);
+        const buf=audioCtx.createBuffer(1,sz,audioCtx.sampleRate);
+        const d=buf.getChannelData(0); for (let i=0;i<sz;i++) d[i]=Math.random()*2-1;
+        const noise=audioCtx.createBufferSource(); noise.buffer=buf;
+        const f=audioCtx.createBiquadFilter(); f.type="bandpass"; f.frequency.value=1200; f.Q.value=2;
+        const g=audioCtx.createGain(); g.gain.setValueAtTime(0.32,now+t); g.gain.exponentialRampToValueAtTime(0.001,now+t+0.04);
+        noise.connect(f); f.connect(g); g.connect(audioCtx.destination); noise.start(now+t);
+    });
+}
+
+// ============================================================
+// THEMATIC SOUNDS — SPIDERMAN 🕷️
+// ============================================================
+function playWebShootSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    const osc=audioCtx.createOscillator(); const g=audioCtx.createGain();
+    osc.type="sine"; osc.frequency.setValueAtTime(4000,now); osc.frequency.exponentialRampToValueAtTime(800,now+0.15);
+    g.gain.setValueAtTime(0.4,now); g.gain.exponentialRampToValueAtTime(0.001,now+0.2);
+    osc.connect(g); g.connect(audioCtx.destination); osc.start(now); osc.stop(now+0.22);
+    const sz=Math.floor(audioCtx.sampleRate*0.05);
+    const buf=audioCtx.createBuffer(1,sz,audioCtx.sampleRate);
+    const d=buf.getChannelData(0); for (let i=0;i<sz;i++) d[i]=Math.random()*2-1;
+    const noise=audioCtx.createBufferSource(); noise.buffer=buf;
+    const ng=audioCtx.createGain(); ng.gain.setValueAtTime(0.3,now); ng.gain.exponentialRampToValueAtTime(0.001,now+0.04);
+    noise.connect(ng); ng.connect(audioCtx.destination); noise.start(now);
+}
+function playSwingSpiderSynth() {
+    initAudioContext(); const now = audioCtx.currentTime; const dur=0.5;
+    const buf=audioCtx.createBuffer(1,audioCtx.sampleRate*dur,audioCtx.sampleRate);
+    const d=buf.getChannelData(0); for (let i=0;i<buf.length;i++) d[i]=Math.random()*2-1;
+    const noise=audioCtx.createBufferSource(); noise.buffer=buf;
+    const f=audioCtx.createBiquadFilter(); f.type="bandpass"; f.Q.value=2;
+    f.frequency.setValueAtTime(200,now); f.frequency.exponentialRampToValueAtTime(4000,now+0.25); f.frequency.exponentialRampToValueAtTime(400,now+0.5);
+    const g=audioCtx.createGain();
+    g.gain.setValueAtTime(0,now); g.gain.linearRampToValueAtTime(0.45,now+0.15); g.gain.exponentialRampToValueAtTime(0.001,now+0.5);
+    noise.connect(f); f.connect(g); g.connect(audioCtx.destination); noise.start(now);
+}
+function playThwipSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    const osc=audioCtx.createOscillator(); const g=audioCtx.createGain();
+    osc.type="square"; osc.frequency.setValueAtTime(5000,now); osc.frequency.exponentialRampToValueAtTime(200,now+0.08);
+    g.gain.setValueAtTime(0.3,now); g.gain.exponentialRampToValueAtTime(0.001,now+0.1);
+    osc.connect(g); g.connect(audioCtx.destination); osc.start(now); osc.stop(now+0.12);
+}
+function playVillainSpiderSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    [110,146.83,196].forEach((freq) => {
+        const osc=audioCtx.createOscillator(); const g=audioCtx.createGain();
+        osc.type="sawtooth"; osc.frequency.value=freq;
+        g.gain.setValueAtTime(0,now); g.gain.linearRampToValueAtTime(0.15,now+0.1);
+        g.gain.setValueAtTime(0.15,now+0.8); g.gain.exponentialRampToValueAtTime(0.001,now+1.2);
+        osc.connect(g); g.connect(audioCtx.destination); osc.start(now); osc.stop(now+1.3);
+    });
+}
+function playSpiderAlertSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    for (let i=0;i<5;i++) {
+        const osc=audioCtx.createOscillator(); const g=audioCtx.createGain();
+        osc.type="sine"; osc.frequency.setValueAtTime(2000+i*100,now+i*0.1);
+        osc.frequency.exponentialRampToValueAtTime(2500+i*100,now+i*0.1+0.07);
+        g.gain.setValueAtTime(0.25,now+i*0.1); g.gain.exponentialRampToValueAtTime(0.001,now+i*0.1+0.09);
+        osc.connect(g); g.connect(audioCtx.destination); osc.start(now+i*0.1); osc.stop(now+i*0.1+0.1);
+    }
+}
+function playBoomImpactSynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    const kick=audioCtx.createOscillator(); const kg=audioCtx.createGain();
+    kick.type="sine"; kick.frequency.setValueAtTime(150,now); kick.frequency.exponentialRampToValueAtTime(30,now+0.2);
+    kg.gain.setValueAtTime(0.85,now); kg.gain.exponentialRampToValueAtTime(0.001,now+0.25);
+    kick.connect(kg); kg.connect(audioCtx.destination); kick.start(now); kick.stop(now+0.3);
+    const sz=Math.floor(audioCtx.sampleRate*0.15);
+    const buf=audioCtx.createBuffer(1,sz,audioCtx.sampleRate);
+    const d=buf.getChannelData(0); for (let i=0;i<sz;i++) d[i]=Math.random()*2-1;
+    const noise=audioCtx.createBufferSource(); noise.buffer=buf;
+    const ng=audioCtx.createGain(); ng.gain.setValueAtTime(0.6,now); ng.gain.exponentialRampToValueAtTime(0.001,now+0.15);
+    noise.connect(ng); ng.connect(audioCtx.destination); noise.start(now);
+}
+function playSpiderPowerSynth() {
+    initAudioContext(); const now = audioCtx.currentTime; const dur=1.2;
+    const osc=audioCtx.createOscillator(); const f=audioCtx.createBiquadFilter(); const g=audioCtx.createGain();
+    osc.type="sawtooth"; osc.frequency.setValueAtTime(80,now); osc.frequency.exponentialRampToValueAtTime(1600,now+dur*0.8);
+    osc.frequency.setValueAtTime(880,now+dur*0.8);
+    f.type="lowpass"; f.frequency.setValueAtTime(200,now); f.frequency.exponentialRampToValueAtTime(3000,now+dur);
+    g.gain.setValueAtTime(0,now); g.gain.linearRampToValueAtTime(0.4,now+dur*0.7); g.gain.exponentialRampToValueAtTime(0.001,now+dur);
+    osc.connect(f); f.connect(g); g.connect(audioCtx.destination); osc.start(now); osc.stop(now+dur+0.05);
+}
+function playSpiderVictorySynth() {
+    initAudioContext(); const now = audioCtx.currentTime;
+    const n=[523,659,784,1047,880,784,1047]; const t=[0,0.1,0.2,0.3,0.5,0.6,0.7]; const dur=[0.08,0.08,0.08,0.18,0.08,0.08,0.5];
+    n.forEach((freq,idx) => {
+        const osc=audioCtx.createOscillator(); const g=audioCtx.createGain();
+        osc.type="square"; osc.frequency.value=freq;
+        g.gain.setValueAtTime(0.22,now+t[idx]); g.gain.exponentialRampToValueAtTime(0.001,now+t[idx]+dur[idx]);
+        osc.connect(g); g.connect(audioCtx.destination); osc.start(now+t[idx]); osc.stop(now+t[idx]+dur[idx]+0.05);
+    });
+}
+function playCityNightSynth() {
+    initAudioContext(); const now = audioCtx.currentTime; const dur=3.0;
+    const osc1=audioCtx.createOscillator(); const g1=audioCtx.createGain();
+    osc1.type="sine";
+    osc1.frequency.setValueAtTime(880,now); osc1.frequency.linearRampToValueAtTime(660,now+1.0);
+    osc1.frequency.linearRampToValueAtTime(880,now+2.0); osc1.frequency.linearRampToValueAtTime(660,now+3.0);
+    g1.gain.setValueAtTime(0,now); g1.gain.linearRampToValueAtTime(0.08,now+0.3);
+    g1.gain.setValueAtTime(0.08,now+dur-0.5); g1.gain.exponentialRampToValueAtTime(0.001,now+dur);
+    osc1.connect(g1); g1.connect(audioCtx.destination); osc1.start(now); osc1.stop(now+dur);
+    const buf=audioCtx.createBuffer(1,audioCtx.sampleRate*dur,audioCtx.sampleRate);
+    const d=buf.getChannelData(0); for (let i=0;i<buf.length;i++) d[i]=Math.random()*2-1;
+    const noise=audioCtx.createBufferSource(); noise.buffer=buf;
+    const nf=audioCtx.createBiquadFilter(); nf.type="lowpass"; nf.frequency.value=400;
+    const ng=audioCtx.createGain(); ng.gain.setValueAtTime(0.03,now); ng.gain.setValueAtTime(0.03,now+dur-0.4); ng.gain.exponentialRampToValueAtTime(0.001,now+dur);
+    noise.connect(nf); nf.connect(ng); ng.connect(audioCtx.destination); noise.start(now);
+}
+
 // --- CONTROLLER FOR SOUNDBOARD BUTTON TRIGGERS ---
+
+// Mapa completo: soundId → función de síntesis
+const SYNTH_FUNCTIONS = {
+    // Genéricos originales (también usados por comandos de voz y cronómetro)
+    applause:  playApplauseSynth,
+    drumroll:  playDrumrollSynth,
+    magic:     playMagicSynth,
+    horn:      playHornSynth,
+    laughs:    playLaughsSynth,
+    suspense:  playSuspenseSynth,
+    ding:      playDingSynth,
+    error:     playErrorSynth,
+    whistle:   playWhistleSynth,
+    // Genéricos nuevos (posiciones 6-9 en soundboard)
+    fanfare:   playFanfarriaSynth,
+    powerup:   playPowerUpSynth,
+    explosion: playExplosionSynth,
+    round:     playRoundSynth,
+    // Piratas
+    canon:     playCanonSynth,
+    parrot:    playParrotSynth,
+    sword:     playSwordSynth,
+    abordaje:  playAbordajeSynth,
+    waves:     playWavesSynth,
+    treasure:  playTreasureSynth,
+    alarmP:    playAlarmPirataSynth,
+    victoriaP: playVictoriaPiratasSynth,
+    shark:     playSharkSynth,
+    // Exploradores
+    jungle:    playJungleSynth,
+    advHorn:   playAdventureHornSynth,
+    discovery: playDiscoverySynth,
+    compass:   playCompassSynth,
+    beast:     playBeastRoarSynth,
+    cave:      playCaveDripSynth,
+    victoriaE: playVictoriaExplorSynth,
+    alertE:    playAlertExplorSynth,
+    march:     playMarchSynth,
+    // Bluey
+    woof:      playWoofSynth,
+    happyB:    playHappyBlueSynth,
+    surpriseB: playSurpriseBlueSynth,
+    danceB:    playDanceBlueSynth,
+    cricket:   playCricketSynth,
+    fluteB:    playFluteBlueSynth,
+    gameB:     playGameBlueSynth,
+    friend:    playFriendSynth,
+    family:    playFamilySynth,
+    // Kpop
+    beatDrop:  playBeatDropSynth,
+    cheerK:    playKCheerSynth,
+    cymbalK:   playKCymbalSynth,
+    synthK:    playKSynthLeadSynth,
+    dropK:     playKDropSynth,
+    airHornK:  playAirHornKSynth,
+    woahK:     playWoahKSynth,
+    crowdK:    playKCrowdSynth,
+    fanchant:  playFanchantSynth,
+    // Spiderman
+    webshoot:  playWebShootSynth,
+    swingS:    playSwingSpiderSynth,
+    thwip:     playThwipSynth,
+    villainS:  playVillainSpiderSynth,
+    alertS:    playSpiderAlertSynth,
+    boomS:     playBoomImpactSynth,
+    powerS:    playSpiderPowerSynth,
+    victoryS:  playSpiderVictorySynth,
+    cityS:     playCityNightSynth,
+};
+
 function triggerSFX(soundId) {
-    // Si el usuario cargó un archivo personalizado para este sonido, reproducirlo
     if (customSfxBlobs[soundId]) {
         playCustomSFXFile(customSfxBlobs[soundId]);
         return;
     }
-    
-    // De lo contrario, disparar el sintetizador offline
-    switch (soundId) {
-        case "applause":
-            playApplauseSynth();
-            break;
-        case "drumroll":
-            playDrumrollSynth();
-            break;
-        case "magic":
-            playMagicSynth();
-            break;
-        case "horn":
-            playHornSynth();
-            break;
-        case "laughs":
-            playLaughsSynth();
-            break;
-        case "suspense":
-            playSuspenseSynth();
-            break;
-        case "ding":
-            playDingSynth();
-            break;
-        case "error":
-            playErrorSynth();
-            break;
-        case "whistle":
-            playWhistleSynth();
-            break;
-    }
+    const fn = SYNTH_FUNCTIONS[soundId];
+    if (fn) fn();
 }
 
 function playCustomSFXFile(fileBlob) {
@@ -491,6 +1098,139 @@ function playCustomSFXFile(fileBlob) {
     audio.play();
 }
 
+
+// ============================================================
+// SOUNDBOARD DATA & DYNAMIC RENDERER
+// ============================================================
+
+const GENERIC_SOUNDS = [
+    { id: "applause",  emoji: "👏", name: "Aplausos",  color: "pad-pink"   },
+    { id: "drumroll",  emoji: "🥁", name: "Redoble",   color: "pad-purple" },
+    { id: "magic",     emoji: "🪄", name: "Mágico",    color: "pad-cyan"   },
+    { id: "horn",      emoji: "🎺", name: "Bocina",    color: "pad-yellow" },
+    { id: "laughs",    emoji: "😆", name: "Risas",     color: "pad-green"  },
+    { id: "fanfare",   emoji: "🏆", name: "Fanfarria", color: "pad-orange" },
+    { id: "powerup",   emoji: "⭐", name: "Power-up",  color: "pad-blue"   },
+    { id: "explosion", emoji: "💥", name: "Explosión", color: "pad-red"    },
+    { id: "round",     emoji: "🔔", name: "Round",     color: "pad-violet" },
+];
+
+const THEMATIC_SOUNDS = {
+    piratas: [
+        { id: "canon",     emoji: "💣",   name: "Cañonazo", color: "pad-purple" },
+        { id: "parrot",    emoji: "🦜",   name: "Loro",     color: "pad-green"  },
+        { id: "sword",     emoji: "⚔️",  name: "Sable",    color: "pad-cyan"   },
+        { id: "abordaje",  emoji: "🏴‍☠️", name: "Abordaje", color: "pad-red"    },
+        { id: "waves",     emoji: "🌊",   name: "Olas",     color: "pad-blue"   },
+        { id: "treasure",  emoji: "💰",   name: "Tesoro",   color: "pad-yellow" },
+        { id: "alarmP",    emoji: "🚨",   name: "Alarma",   color: "pad-orange" },
+        { id: "victoriaP", emoji: "🏆",   name: "Victoria", color: "pad-pink"   },
+        { id: "shark",     emoji: "🦈",   name: "Tiburón",  color: "pad-violet" },
+    ],
+    exploradores: [
+        { id: "jungle",    emoji: "🌿",   name: "Selva",      color: "pad-green"  },
+        { id: "advHorn",   emoji: "📯",   name: "Aventura",   color: "pad-yellow" },
+        { id: "discovery", emoji: "✨",   name: "Descubrím.", color: "pad-cyan"   },
+        { id: "compass",   emoji: "🧭",   name: "Brújula",    color: "pad-blue"   },
+        { id: "beast",     emoji: "🦁",   name: "Bestia",     color: "pad-orange" },
+        { id: "cave",      emoji: "🕳️",  name: "Cueva",     color: "pad-purple" },
+        { id: "victoriaE", emoji: "🏆",   name: "Victoria",   color: "pad-pink"   },
+        { id: "alertE",    emoji: "⚠️",  name: "Alerta",    color: "pad-red"    },
+        { id: "march",     emoji: "🥁",   name: "Marcha",     color: "pad-violet" },
+    ],
+    bluey: [
+        { id: "woof",      emoji: "🐕",   name: "¡Guau!",   color: "pad-blue"   },
+        { id: "happyB",    emoji: "😊",   name: "Feliz",     color: "pad-yellow" },
+        { id: "surpriseB", emoji: "😲",   name: "Sorpresa",  color: "pad-cyan"   },
+        { id: "danceB",    emoji: "💃",   name: "Bailar",    color: "pad-pink"   },
+        { id: "cricket",   emoji: "🦗",   name: "Grillo",    color: "pad-green"  },
+        { id: "fluteB",    emoji: "🎵",   name: "Flauta",    color: "pad-violet" },
+        { id: "gameB",     emoji: "🎮",   name: "Juego",     color: "pad-orange" },
+        { id: "friend",    emoji: "🤝",   name: "Amistad",   color: "pad-red"    },
+        { id: "family",    emoji: "❤️",  name: "Familia",  color: "pad-purple" },
+    ],
+    kpop: [
+        { id: "beatDrop",  emoji: "🎵",   name: "Beat Drop", color: "pad-purple" },
+        { id: "cheerK",    emoji: "📣",   name: "Cheer",     color: "pad-pink"   },
+        { id: "cymbalK",   emoji: "🥁",   name: "Cymbal",    color: "pad-violet" },
+        { id: "synthK",    emoji: "🎹",   name: "Synth",     color: "pad-cyan"   },
+        { id: "dropK",     emoji: "⬇️",  name: "Drop",     color: "pad-blue"   },
+        { id: "airHornK",  emoji: "📯",   name: "Air Horn",  color: "pad-yellow" },
+        { id: "woahK",     emoji: "😮",   name: "¡Woah!",   color: "pad-orange" },
+        { id: "crowdK",    emoji: "👥",   name: "Crowd",     color: "pad-red"    },
+        { id: "fanchant",  emoji: "💜",   name: "Fanchant",  color: "pad-green"  },
+    ],
+    spiderman: [
+        { id: "webshoot",  emoji: "🕸️",  name: "Web Shoot", color: "pad-red"    },
+        { id: "swingS",    emoji: "🏙️",  name: "Swing",    color: "pad-blue"   },
+        { id: "thwip",     emoji: "💨",   name: "Thwip",     color: "pad-cyan"   },
+        { id: "villainS",  emoji: "😈",   name: "Villano",   color: "pad-purple" },
+        { id: "alertS",    emoji: "🚨",   name: "Alerta",    color: "pad-orange" },
+        { id: "boomS",     emoji: "💥",   name: "Boom",      color: "pad-pink"   },
+        { id: "powerS",    emoji: "⚡",   name: "Poder",     color: "pad-yellow" },
+        { id: "victoryS",  emoji: "🏆",   name: "Victoria",  color: "pad-green"  },
+        { id: "cityS",     emoji: "🌃",   name: "Ciudad",    color: "pad-violet" },
+    ],
+};
+
+const SOUNDBOARD_THEME_LABELS = {
+    juegos:       "🎉 Genérico",
+    piratas:      "🏴‍☠️ Piratas",
+    exploradores: "🧭 Exploradores",
+    bluey:        "💙 Bluey",
+    kpop:         "🎤 K-Pop",
+    spiderman:    "🕷️ Spiderman",
+};
+
+function renderSoundboard(sounds, label) {
+    const grid = document.getElementById("soundboard-grid");
+    if (!grid) return;
+    grid.innerHTML = "";
+
+    sounds.forEach((sound, idx) => {
+        const pad = document.createElement("button");
+        pad.className = `sound-pad ${sound.color || "pad-pink"}`;
+        pad.setAttribute("data-sound", sound.id);
+        pad.setAttribute("data-key", String(idx + 1));
+        pad.innerHTML = `
+            <span class="pad-key">${idx + 1}</span>
+            <span class="pad-emoji">${sound.emoji}</span>
+            <span class="pad-name">${sound.name}</span>
+        `;
+
+        // Restaurar estado personalizado si existe
+        if (customSfxBlobs[sound.id]) {
+            pad.classList.add("customized");
+            pad.style.borderStyle = "dashed";
+            const nameEl = pad.querySelector(".pad-name");
+            if (!nameEl.textContent.startsWith("*")) nameEl.textContent = `* ${nameEl.textContent}`;
+        }
+
+        pad.addEventListener("click", () => {
+            triggerSFX(sound.id);
+            pad.classList.add("triggered");
+            setTimeout(() => pad.classList.remove("triggered"), 150);
+        });
+
+        grid.appendChild(pad);
+    });
+
+    // Actualizar label del tema en el header del panel
+    const themeLabel = document.getElementById("soundboard-theme-label");
+    if (themeLabel) themeLabel.textContent = label || "🎉 Genérico";
+
+    // Actualizar select del custom SFX binder con los sonidos actuales
+    const sfxSelect = document.getElementById("sfx-select-to-bind");
+    if (sfxSelect) {
+        sfxSelect.innerHTML = "";
+        sounds.forEach((sound, idx) => {
+            const opt = document.createElement("option");
+            opt.value = sound.id;
+            opt.textContent = `Reemplazar ${idx + 1}. ${sound.name} ${sound.emoji}`;
+            sfxSelect.appendChild(opt);
+        });
+    }
+}
 
 // --- SPEECH RECOGNITION (VOICE ASSISTANT "OYE SAMADRY") ---
 
@@ -1655,6 +2395,11 @@ function switchPlaylistTab(tabId) {
     }
     
     renderSongsList();
+
+    // Auto-cambiar soundboard según la temática de la playlist
+    const thematicSounds = THEMATIC_SOUNDS[key];
+    const themeLabel = SOUNDBOARD_THEME_LABELS[key] || "🎉 Genérico";
+    renderSoundboard(thematicSounds || GENERIC_SOUNDS, themeLabel);
 }
 
 function getPlaylistLabel(key) {
@@ -2224,10 +2969,11 @@ window.addEventListener("keydown", (e) => {
 
 
 // --- INITIALIZATION ---
-// Inyectar estilos del número de pista (evita depender de index.css para este elemento)
+// Inyectar estilos dinámicos (evita depender de la subida de index.css al hosting)
 document.head.insertAdjacentHTML('beforeend', `<style>
 .song-number{font-size:.7rem;font-weight:700;color:var(--text-secondary);min-width:22px;margin-right:6px;font-variant-numeric:tabular-nums;opacity:.6}
 .song-item.active .song-number{color:var(--neon-cyan);opacity:1}
+.soundboard-theme-badge{display:inline-block;font-size:.62rem;font-weight:600;padding:2px 8px;border-radius:20px;background:rgba(157,78,221,.18);border:1px solid rgba(157,78,221,.4);color:#c77dff;letter-spacing:.03em;vertical-align:middle;margin-left:6px;transition:background .3s,color .3s}
 </style>`);
 
 window.addEventListener("DOMContentLoaded", async () => {
@@ -2270,6 +3016,9 @@ window.addEventListener("DOMContentLoaded", async () => {
         updateSpotifyStatusUI(false, "Spotify autorizado. Preparando reproductor...");
         initSpotifyPlayerIfReady();
     }
+
+    // Renderizar soundboard genérico primero (para que loadCustomSFXFromDB encuentre los pads)
+    renderSoundboard(GENERIC_SOUNDS, "🎉 Genérico");
 
     // Cargar sonidos personalizados de IndexedDB
     loadCustomSFXFromDB();
