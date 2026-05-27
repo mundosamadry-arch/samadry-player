@@ -584,7 +584,7 @@ function processVoiceCommand(transcript) {
     // --- Comandos directos (sin activador) ---
 
     // "siguiente canción" → pasa a la siguiente pista
-    if (transcript.includes("siguiente canción") || transcript.includes("siguiente cancion") || transcript.includes("siguiente")) {
+    if (transcript.includes("siguiente canción") || transcript.includes("siguiente cancion")) {
         _lastCommandAt = now;
         playNext();
         showToast("Voz: ⏭️ Siguiente canción");
@@ -600,7 +600,7 @@ function processVoiceCommand(transcript) {
     }
 
     // "seguimos" / "sigue" → reanuda la canción
-    if (transcript.includes("seguimos") || transcript.includes("sigue") || transcript.includes("continúa") || transcript.includes("continua")) {
+    if (transcript.includes("seguimos")) {
         _lastCommandAt = now;
         playCurrentTrack();
         showToast("Voz: ▶️ Seguimos");
