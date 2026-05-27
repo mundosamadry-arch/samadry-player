@@ -603,8 +603,10 @@ function processVoiceCommand(transcript) {
         return;
     }
 
-    // "momento samadry" / "mundo samadry" → canción especial Mundo Samadry
-    if (transcript.includes("momento samadry") || transcript.includes("mundo samadry")) {
+    // "momento samadry" / variantes de pronunciación → canción especial Mundo Samadry
+    if (transcript.includes("momento samadry") || transcript.includes("momento samadri") ||
+        transcript.includes("momento sama") || transcript.includes("mundo samadry") ||
+        transcript.includes("mundo samadri") || transcript.includes("mundo sama")) {
         loadTrack("mundo_samadry", 0);
         playCurrentTrack();
         showToast("Voz: 🌟 ¡Mundo Samadry!");
