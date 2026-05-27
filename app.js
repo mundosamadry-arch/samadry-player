@@ -580,6 +580,20 @@ function processVoiceCommand(transcript) {
 
     // --- Comandos directos (sin activador) ---
 
+    // "stop" → pausa la canción
+    if (transcript.includes("stop") || transcript.includes("para") || transcript.includes("parar")) {
+        pauseCurrentTrack();
+        showToast("Voz: ⏸️ Stop");
+        return;
+    }
+
+    // "seguimos" / "sigue" → reanuda la canción
+    if (transcript.includes("seguimos") || transcript.includes("sigue") || transcript.includes("continúa") || transcript.includes("continua")) {
+        playCurrentTrack();
+        showToast("Voz: ▶️ Seguimos");
+        return;
+    }
+
     // "preparados listos" → carga y reproduce juegos directamente
     if (transcript.includes("preparados listos")) {
         startGamesMusicNow();
