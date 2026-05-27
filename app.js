@@ -12,28 +12,28 @@ const PLAYLISTS = {
             title: "I'm Still Standing",
             artist: "Mundo Samadry",
             duration: "--:--",
-            url: "https://animacionesinfantilesmusicales.com/samadry-audio/01-I_m_Still_Standing.mp3",
+            url: "https://animacionesinfantilesmusicales.com/samadry-audio/juegos-generica/01-I_m_Still_Standing.mp3",
             tag: "Juegos Generica"
         },
         {
             title: "Algo Asi Quiero Yo",
             artist: "Mundo Samadry",
             duration: "--:--",
-            url: "https://animacionesinfantilesmusicales.com/samadry-audio/02-Algo_Asi_Quiero_Yo.mp3",
+            url: "https://animacionesinfantilesmusicales.com/samadry-audio/juegos-generica/02-Algo_Asi_Quiero_Yo.mp3",
             tag: "Juegos Generica"
         },
         {
             title: "Superheroe",
             artist: "Mundo Samadry",
             duration: "--:--",
-            url: "https://animacionesinfantilesmusicales.com/samadry-audio/03-Superheroe.mp3",
+            url: "https://animacionesinfantilesmusicales.com/samadry-audio/juegos-generica/03-Superheroe.mp3",
             tag: "Juegos Generica"
         },
         {
             title: "Hijo de Hombre",
             artist: "Mundo Samadry",
             duration: "--:--",
-            url: "https://animacionesinfantilesmusicales.com/samadry-audio/04-Hijo_de_Hombre.mp3",
+            url: "https://animacionesinfantilesmusicales.com/samadry-audio/juegos-generica/04-Hijo_de_Hombre.mp3",
             tag: "Juegos Generica"
         }
     ],
