@@ -575,6 +575,9 @@ function toggleVoiceAssistant(forceState) {
 }
 
 function processVoiceCommand(transcript) {
+    // DEBUG temporal: muestra el texto reconocido en pantalla
+    showToast(`🎙️ "${transcript}"`);
+
     // --- Comandos directos (sin activador) ---
 
     // "preparados listo ya" / "preparados listos ya" → cuenta atrás + juegos
