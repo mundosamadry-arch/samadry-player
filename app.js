@@ -2036,11 +2036,13 @@ document.getElementById("fullscreen-btn").addEventListener("click", () => {
 });
 
 // Botones de acceso rápido
-document.getElementById("btn-tarta")?.addEventListener("click", () => {
+document.getElementById("btn-tarta")?.addEventListener("click", async () => {
     loadTrack("tarta", 0);
+    await playCurrentTrack();
 });
-document.getElementById("btn-mundo-samadry")?.addEventListener("click", () => {
+document.getElementById("btn-mundo-samadry")?.addEventListener("click", async () => {
     loadTrack("mundo_samadry", 0);
+    await playCurrentTrack();
 });
 
 // Asignar triggers a los botones de la Soundboard
