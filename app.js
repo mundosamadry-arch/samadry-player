@@ -3,7 +3,7 @@
    ========================================================================== */
 
 // --- DATA: SONG PLAYLISTS ---
-const AUDIO_LIBRARY_BASE_URL = "https://animacionesinfantilesmusicales.com/samadry-audio/";
+const AUDIO_LIBRARY_BASE_URL = "https://animacionesinfantilesmusicales.com/player/samadry-audio/";
 const HOSTED_PLAYLIST_MANIFEST_URL = `${AUDIO_LIBRARY_BASE_URL}playlists.json`;
 
 const PLAYLISTS = {
@@ -12,28 +12,28 @@ const PLAYLISTS = {
             title: "I'm Still Standing",
             artist: "Mundo Samadry",
             duration: "--:--",
-            url: "https://animacionesinfantilesmusicales.com/samadry-audio/juegos-generica/01-I_m_Still_Standing.mp3",
+            url: "https://animacionesinfantilesmusicales.com/player/samadry-audio/juegos-generica/01-I_m_Still_Standing.mp3",
             tag: "Juegos Generica"
         },
         {
             title: "Algo Asi Quiero Yo",
             artist: "Mundo Samadry",
             duration: "--:--",
-            url: "https://animacionesinfantilesmusicales.com/samadry-audio/juegos-generica/02-Algo_Asi_Quiero_Yo.mp3",
+            url: "https://animacionesinfantilesmusicales.com/player/samadry-audio/juegos-generica/02-Algo_Asi_Quiero_Yo.mp3",
             tag: "Juegos Generica"
         },
         {
             title: "Superheroe",
             artist: "Mundo Samadry",
             duration: "--:--",
-            url: "https://animacionesinfantilesmusicales.com/samadry-audio/juegos-generica/03-Superheroe.mp3",
+            url: "https://animacionesinfantilesmusicales.com/player/samadry-audio/juegos-generica/03-Superheroe.mp3",
             tag: "Juegos Generica"
         },
         {
             title: "Hijo de Hombre",
             artist: "Mundo Samadry",
             duration: "--:--",
-            url: "https://animacionesinfantilesmusicales.com/samadry-audio/juegos-generica/04-Hijo_de_Hombre.mp3",
+            url: "https://animacionesinfantilesmusicales.com/player/samadry-audio/juegos-generica/04-Hijo_de_Hombre.mp3",
             tag: "Juegos Generica"
         }
     ],
@@ -48,7 +48,7 @@ const PLAYLISTS = {
             title: "Canción de Tarta",
             artist: "Mundo Samadry",
             duration: "--:--",
-            url: "https://animacionesinfantilesmusicales.com/samadry-audio/especiales/tarta.mp3",
+            url: "https://animacionesinfantilesmusicales.com/player/samadry-audio/especiales/tarta.mp3",
             tag: "Especial"
         }
     ],
@@ -57,7 +57,7 @@ const PLAYLISTS = {
             title: "Mundo Samadry",
             artist: "Mundo Samadry",
             duration: "--:--",
-            url: "https://animacionesinfantilesmusicales.com/samadry-audio/especiales/mundo-samadry.mp3",
+            url: "https://animacionesinfantilesmusicales.com/player/samadry-audio/especiales/mundo-samadry.mp3",
             tag: "Especial"
         }
     ]
