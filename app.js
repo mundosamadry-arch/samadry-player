@@ -3,90 +3,45 @@
    ========================================================================== */
 
 // --- DATA: SONG PLAYLISTS ---
+const AUDIO_LIBRARY_BASE_URL = "https://animacionesinfantilesmusicales.com/samadry-audio/";
+const HOSTED_PLAYLIST_MANIFEST_URL = `${AUDIO_LIBRARY_BASE_URL}playlists.json`;
+
 const PLAYLISTS = {
-    samadry: [
-        {
-            title: "I'm Still Standing",
-            artist: "Mundo Samadry",
-            duration: "--:--",
-            url: "https://animacionesinfantilesmusicales.com/samadry-audio/01-I_m_Still_Standing.mp3",
-            tag: "Canciones Samadry"
-        },
-        {
-            title: "Algo Asi Quiero Yo",
-            artist: "Mundo Samadry",
-            duration: "--:--",
-            url: "https://animacionesinfantilesmusicales.com/samadry-audio/02-Algo_Asi_Quiero_Yo.mp3",
-            tag: "Canciones Samadry"
-        },
-        {
-            title: "Superheroe",
-            artist: "Mundo Samadry",
-            duration: "--:--",
-            url: "https://animacionesinfantilesmusicales.com/samadry-audio/03-Superheroe.mp3",
-            tag: "Canciones Samadry"
-        },
-        {
-            title: "Hijo de Hombre",
-            artist: "Mundo Samadry",
-            duration: "--:--",
-            url: "https://animacionesinfantilesmusicales.com/samadry-audio/04-Hijo_de_Hombre.mp3",
-            tag: "Canciones Samadry"
-        }
-    ],
     juegos: [
         {
             title: "I'm Still Standing",
             artist: "Mundo Samadry",
             duration: "--:--",
             url: "https://animacionesinfantilesmusicales.com/samadry-audio/01-I_m_Still_Standing.mp3",
-            tag: "Juegos"
+            tag: "Juegos Generica"
         },
         {
             title: "Algo Asi Quiero Yo",
             artist: "Mundo Samadry",
             duration: "--:--",
             url: "https://animacionesinfantilesmusicales.com/samadry-audio/02-Algo_Asi_Quiero_Yo.mp3",
-            tag: "Juegos"
+            tag: "Juegos Generica"
         },
         {
             title: "Superheroe",
             artist: "Mundo Samadry",
             duration: "--:--",
             url: "https://animacionesinfantilesmusicales.com/samadry-audio/03-Superheroe.mp3",
-            tag: "Juegos"
+            tag: "Juegos Generica"
         },
         {
             title: "Hijo de Hombre",
             artist: "Mundo Samadry",
             duration: "--:--",
             url: "https://animacionesinfantilesmusicales.com/samadry-audio/04-Hijo_de_Hombre.mp3",
-            tag: "Juegos"
+            tag: "Juegos Generica"
         }
     ],
-    tematico: [
-        {
-            title: "Aventura Pirata en Alta Mar",
-            artist: "Temático Aventuras",
-            duration: "02:50",
-            url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3",
-            tag: "Temática Piratas"
-        },
-        {
-            title: "El Vals de las Princesas",
-            artist: "Orquestal Dulce",
-            duration: "03:02",
-            url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3",
-            tag: "Temática Princesas"
-        },
-        {
-            title: "Héroes en Acción (Ritmo Épico)",
-            artist: "Banda Sonora Sintetizador",
-            duration: "02:40",
-            url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-12.mp3",
-            tag: "Temática Héroes"
-        }
-    ],
+    piratas: [],
+    exploradores: [],
+    bluey: [],
+    kpop: [],
+    spiderman: [],
     locales: [] // Se llena con archivos subidos por el usuario
 };
 
@@ -971,6 +926,49 @@ window.onSpotifyWebPlaybackSDKReady = () => {
     initSpotifyPlayerIfReady();
 };
 
+function buildHostedAudioUrl(fileOrUrl) {
+    if (/^https?:\/\//i.test(fileOrUrl)) return fileOrUrl;
+    return new URL(fileOrUrl.replace(/^\/+/, ""), AUDIO_LIBRARY_BASE_URL).href;
+}
+
+function normalizeHostedTrack(rawTrack, playlistKey) {
+    const source = rawTrack.url || rawTrack.file;
+    if (!source) return null;
+    
+    return {
+        title: rawTrack.title || source.split("/").pop().replace(/\.[^/.]+$/, "").replace(/[_-]+/g, " "),
+        artist: rawTrack.artist || "Mundo Samadry",
+        duration: rawTrack.duration || "--:--",
+        url: buildHostedAudioUrl(source),
+        tag: rawTrack.tag || getPlaylistLabel(playlistKey)
+    };
+}
+
+async function loadHostedPlaylists() {
+    try {
+        const response = await fetch(`${HOSTED_PLAYLIST_MANIFEST_URL}?v=${Date.now()}`, { cache: "no-store" });
+        if (!response.ok) {
+            throw new Error(`No se pudo cargar playlists.json (${response.status})`);
+        }
+        
+        const manifest = await response.json();
+        Object.keys(PLAYLISTS).forEach((key) => {
+            if (key === "locales" || !Array.isArray(manifest[key])) return;
+            
+            const tracks = manifest[key]
+                .map((track) => normalizeHostedTrack(track, key))
+                .filter(Boolean);
+            
+            PLAYLISTS[key] = tracks;
+        });
+        
+        document.getElementById("audio-source-status").textContent = "Modo: Listas del hosting cargadas";
+    } catch (err) {
+        console.warn("No se pudieron cargar las listas del hosting. Se usaran las listas integradas.", err);
+        document.getElementById("audio-source-status").textContent = "Modo: Listas integradas";
+    }
+}
+
 function transferSpotifyPlayback(deviceId, token) {
     fetch('https://api.spotify.com/v1/me/player', {
         method: 'PUT',
@@ -1076,7 +1074,7 @@ function searchAndPlayLocal(query) {
 const nativePlayer = document.getElementById("native-audio-player");
 nativePlayer.preload = "auto";
 nativePlayer.playsInline = true;
-let currentPlaylistKey = "samadry";
+let currentPlaylistKey = "juegos";
 let currentTrackIndex = -1;
 let isLooping = false;
 let activePlaybackSource = "native";
@@ -1568,6 +1566,20 @@ function switchPlaylistTab(tabId) {
     renderSongsList();
 }
 
+function getPlaylistLabel(key) {
+    const labels = {
+        juegos: "Juegos Generica",
+        piratas: "Piratas",
+        exploradores: "Exploradores",
+        bluey: "Bluey",
+        kpop: "Kpop",
+        spiderman: "Spiderman",
+        locales: "Mis MP3"
+    };
+    
+    return labels[key] || key;
+}
+
 function renderSongsList() {
     const listEl = document.getElementById("playlist-content");
     listEl.innerHTML = "";
@@ -1584,17 +1596,24 @@ function renderSongsList() {
                 </div>
             `;
         } else {
-            listEl.innerHTML = `<p style="padding: 20px; text-align: center; color: var(--text-secondary);">No hay pistas.</p>`;
+            listEl.innerHTML = `
+                <div class="empty-state">
+                    <p style="text-align: center; color: var(--text-secondary); padding: 30px 10px; font-size: 0.85rem;">
+                        La lista "${getPlaylistLabel(currentPlaylistKey)}" aun no tiene canciones.<br>
+                        Subelas al hosting y anadelas a playlists.json.
+                    </p>
+                </div>
+            `;
         }
         return;
     }
     
     songs.forEach((song, idx) => {
         const item = document.createElement("div");
-        item.className = `song-item ${currentTrackIndex === idx && currentPlaylistKey === song.playlistSource ? 'active' : ''}`;
-        
+
         // Asignar campo de origen a la estructura de la canción si no existe
         song.playlistSource = currentPlaylistKey;
+        item.className = `song-item ${currentTrackIndex === idx && currentPlaylistKey === song.playlistSource ? 'active' : ''}`;
         
         item.innerHTML = `
             <span class="song-play-icon">${currentTrackIndex === idx && currentPlaylistKey === song.playlistSource && !nativePlayer.paused ? '🔊' : '▶️'}</span>
@@ -1986,10 +2005,9 @@ document.getElementById("fullscreen-btn").addEventListener("click", () => {
 });
 
 // Pestañas de Playlist
-document.getElementById("tab-samadry").addEventListener("click", () => switchPlaylistTab("tab-samadry"));
-document.getElementById("tab-juegos").addEventListener("click", () => switchPlaylistTab("tab-juegos"));
-document.getElementById("tab-tematico").addEventListener("click", () => switchPlaylistTab("tab-tematico"));
-document.getElementById("tab-locales").addEventListener("click", () => switchPlaylistTab("tab-locales"));
+["juegos", "piratas", "exploradores", "bluey", "kpop", "spiderman", "locales"].forEach((key) => {
+    document.getElementById(`tab-${key}`).addEventListener("click", () => switchPlaylistTab(`tab-${key}`));
+});
 
 // Asignar triggers a los botones de la Soundboard
 const soundPads = document.querySelectorAll(".sound-pad");
@@ -2146,7 +2164,10 @@ window.addEventListener("DOMContentLoaded", async () => {
     // Cargar sonidos personalizados de IndexedDB
     loadCustomSFXFromDB();
     
-    // Configurar listas por defecto
+    // Cargar listas del hosting si existe playlists.json
+    await loadHostedPlaylists();
+    
+    // Configurar listas por defecto o cargadas
     renderSongsList();
     
     // Configurar temporizadores por defecto
