@@ -2191,6 +2191,12 @@ window.addEventListener("keydown", (e) => {
 
 
 // --- INITIALIZATION ---
+// Inyectar estilos del número de pista (evita depender de index.css para este elemento)
+document.head.insertAdjacentHTML('beforeend', `<style>
+.song-number{font-size:.7rem;font-weight:700;color:var(--text-secondary);min-width:22px;margin-right:6px;font-variant-numeric:tabular-nums;opacity:.6}
+.song-item.active .song-number{color:var(--neon-cyan);opacity:1}
+</style>`);
+
 window.addEventListener("DOMContentLoaded", async () => {
     // 1. Extraer tokens de Spotify si redirige del login OAuth antiguo
     const hash = window.location.hash.substring(1);
