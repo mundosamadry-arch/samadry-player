@@ -575,12 +575,40 @@ function toggleVoiceAssistant(forceState) {
 }
 
 function processVoiceCommand(transcript) {
-    // Comando directo sin activador: "preparados listos ya"
-    if (transcript.includes("preparados listos ya") || transcript.includes("preparados listos y ya")) {
-        startGamesMusicNow();
+    // --- Comandos directos (sin activador) ---
+
+    // "preparados listo ya" / "preparados listos ya" → cuenta atrás + juegos
+    if (transcript.includes("preparados listo ya") || transcript.includes("preparados listos ya") || transcript.includes("preparados listos y ya")) {
+        triggerGameCountdown();
+        showToast("Voz: ¡Preparados! 3… 2… 1… 🎮");
         return;
     }
-    
+
+    // "comienza la lista de juegos generica" → carga y reproduce juegos
+    if (transcript.includes("comienza la lista de juegos") || transcript.includes("lista de juegos generica") || transcript.includes("empieza juegos")) {
+        switchPlaylistTab("tab-juegos");
+        loadTrack("juegos", 0);
+        playCurrentTrack();
+        showToast("Voz: Juegos Generica ▶️ 🏃");
+        return;
+    }
+
+    // "momento tarta" → canción de cumpleaños
+    if (transcript.includes("momento tarta") || transcript.includes("canción tarta") || transcript.includes("cancion tarta")) {
+        loadTrack("tarta", 0);
+        playCurrentTrack();
+        showToast("Voz: 🎂 ¡Momento Tarta!");
+        return;
+    }
+
+    // "momento samadry" / "mundo samadry" → canción especial Mundo Samadry
+    if (transcript.includes("momento samadry") || transcript.includes("mundo samadry")) {
+        loadTrack("mundo_samadry", 0);
+        playCurrentTrack();
+        showToast("Voz: 🌟 ¡Mundo Samadry!");
+        return;
+    }
+
     // Comandos que requieren activador "Samadry"
     if (transcript.includes("samadry")) {
         // Extraer el texto tras el activador
