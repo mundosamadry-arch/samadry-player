@@ -580,10 +580,9 @@ function processVoiceCommand(transcript) {
 
     // --- Comandos directos (sin activador) ---
 
-    // "preparados listo ya" / "preparados listos ya" → cuenta atrás + juegos
-    if (transcript.includes("preparados listo ya") || transcript.includes("preparados listos ya") || transcript.includes("preparados listos y ya")) {
-        triggerGameCountdown();
-        showToast("Voz: ¡Preparados! 3… 2… 1… 🎮");
+    // "preparados listos" → carga y reproduce juegos directamente
+    if (transcript.includes("preparados listos")) {
+        startGamesMusicNow();
         return;
     }
 
