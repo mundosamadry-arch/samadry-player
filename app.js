@@ -583,6 +583,14 @@ function processVoiceCommand(transcript) {
 
     // --- Comandos directos (sin activador) ---
 
+    // "siguiente canción" → pasa a la siguiente pista
+    if (transcript.includes("siguiente canción") || transcript.includes("siguiente cancion") || transcript.includes("siguiente")) {
+        _lastCommandAt = now;
+        playNext();
+        showToast("Voz: ⏭️ Siguiente canción");
+        return;
+    }
+
     // "stop" → pausa la canción
     if (transcript.includes("stop")) {
         _lastCommandAt = now;
