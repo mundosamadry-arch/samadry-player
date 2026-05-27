@@ -1674,6 +1674,7 @@ function renderSongsList() {
         item.className = `song-item ${currentTrackIndex === idx && currentPlaylistKey === song.playlistSource ? 'active' : ''}`;
         
         item.innerHTML = `
+            <span class="song-number">${String(idx + 1).padStart(2, '0')}</span>
             <span class="song-play-icon">${currentTrackIndex === idx && currentPlaylistKey === song.playlistSource && !nativePlayer.paused ? '🔊' : '▶️'}</span>
             <div class="song-details">
                 <div class="song-title">${song.title}</div>

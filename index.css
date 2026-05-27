@@ -847,6 +847,21 @@ body {
     border-color: rgba(0, 240, 255, 0.2);
 }
 
+.song-number {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    min-width: 22px;
+    margin-right: 6px;
+    font-variant-numeric: tabular-nums;
+    opacity: 0.6;
+}
+
+.song-item.active .song-number {
+    color: var(--neon-cyan);
+    opacity: 1;
+}
+
 .song-play-icon {
     font-size: 1.1rem;
     margin-right: 12px;
