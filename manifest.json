@@ -1,0 +1,21 @@
+{
+  "name": "Samadry Player",
+  "short_name": "Samadry",
+  "description": "Reproductor de musica y banco de sonidos para animadores de eventos infantiles.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#09090e",
+  "theme_color": "#9d4edd",
+  "lang": "es",
+  "categories": ["entertainment", "music"],
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

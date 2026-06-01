@@ -2034,7 +2034,8 @@ function loadTrack(playlistKey, index) {
     
     setNativePlayerSource(track);
     nativePlayer.load();
-    
+    prefetchNextTrack();
+
     // UI Updates
     document.getElementById("track-title").textContent = track.title;
     document.getElementById("track-subtitle").textContent = `${track.artist} • ${track.tag}`;
@@ -2066,6 +2067,7 @@ async function playCurrentTrack() {
             await nativePlayer.play();
             initAudioContext();
             connectNativePlayerToVisualizerIfSafe();
+            requestWakeLock();
             playBtn.textContent = "⏸️";
             document.getElementById("track-disc").style.animationPlayState = "running";
             updateActiveSongHighlight();
@@ -2089,6 +2091,7 @@ function pauseCurrentTrack() {
     }
     
     nativePlayer.pause();
+    releaseWakeLock();
     playBtn.textContent = "▶️";
     document.getElementById("track-disc").style.animationPlayState = "paused";
 }
@@ -2111,6 +2114,7 @@ function stopTrack() {
         return;
     }
     nativePlayer.pause();
+    releaseWakeLock();
     nativePlayer.currentTime = 0;
     document.getElementById("player-play-btn").textContent = "▶️";
     document.getElementById("track-disc").style.animationPlayState = "paused";
@@ -3010,6 +3014,133 @@ window.addEventListener("keydown", (e) => {
 
 
 // --- INITIALIZATION ---
+// ============================================================
+// PWA: SERVICE WORKER, OFFLINE, WAKE LOCK, INSTALACIÓN
+// ============================================================
+
+// --- Registro del Service Worker ---
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("sw.js")
+            .then((reg) => console.log("Service Worker registrado:", reg.scope))
+            .catch((err) => console.warn("No se pudo registrar el Service Worker:", err));
+    });
+
+    // Escuchar progreso de la pre-descarga de audio
+    navigator.serviceWorker.addEventListener("message", (event) => {
+        const data = event.data || {};
+        const btn = document.getElementById("download-offline-btn");
+        if (data.type === "PRECACHE_PROGRESS" && btn) {
+            btn.textContent = `${data.done}/${data.total}`;
+        }
+        if (data.type === "PRECACHE_DONE") {
+            if (btn) {
+                btn.textContent = "✅";
+                setTimeout(() => { btn.textContent = "⬇️"; }, 3000);
+            }
+            showToast(`✅ ${data.total} pista(s) disponibles sin conexión`);
+        }
+    });
+}
+
+// --- Wake Lock: mantener la pantalla encendida durante el show ---
+let wakeLock = null;
+
+async function requestWakeLock() {
+    try {
+        if ("wakeLock" in navigator) {
+            wakeLock = await navigator.wakeLock.request("screen");
+        }
+    } catch (err) {
+        // Algunos navegadores la bloquean si la pestaña no está activa; no es crítico
+        console.warn("Wake Lock no disponible:", err.message);
+    }
+}
+
+function releaseWakeLock() {
+    if (wakeLock) {
+        wakeLock.release().catch(() => {});
+        wakeLock = null;
+    }
+}
+
+// Re-adquirir el bloqueo al volver a la app si seguía reproduciéndose
+document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && !nativePlayer.paused) {
+        requestWakeLock();
+    }
+});
+
+// --- Precarga de la siguiente pista (transición sin huecos) ---
+function prefetchNextTrack() {
+    const playlist = PLAYLISTS[currentPlaylistKey];
+    if (!playlist || playlist.length < 2) return;
+
+    let nextIndex = currentTrackIndex + 1;
+    if (nextIndex >= playlist.length) nextIndex = 0;
+
+    const track = playlist[nextIndex];
+    if (track && track.url && !track.fileObject) {
+        // Disparar fetch: el Service Worker lo guardará en caché de audio
+        fetch(track.url).catch(() => {});
+    }
+}
+
+// --- Descargar todas las canciones para uso sin conexión ---
+function collectAllAudioUrls() {
+    const urls = new Set();
+    Object.keys(PLAYLISTS).forEach((key) => {
+        PLAYLISTS[key].forEach((t) => {
+            if (t.url && !t.fileObject) urls.add(t.url);
+        });
+    });
+    Object.values(hostedSfxUrls || {}).forEach((u) => urls.add(u));
+    return [...urls];
+}
+
+function downloadForOffline() {
+    if (!("serviceWorker" in navigator) || !navigator.serviceWorker.controller) {
+        showToast("Recarga la página una vez para activar el modo offline.");
+        return;
+    }
+    const urls = collectAllAudioUrls();
+    if (urls.length === 0) {
+        showToast("Aún no hay canciones que descargar.");
+        return;
+    }
+    showToast(`⬇️ Descargando ${urls.length} pista(s) para usar sin conexión...`);
+    navigator.serviceWorker.controller.postMessage({ type: "PRECACHE_AUDIO", urls });
+}
+
+document.getElementById("download-offline-btn")?.addEventListener("click", downloadForOffline);
+
+// --- Prompt de instalación de la PWA ---
+let deferredInstallPrompt = null;
+
+window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    const installBtn = document.getElementById("install-app-btn");
+    if (installBtn) installBtn.style.display = "";
+});
+
+document.getElementById("install-app-btn")?.addEventListener("click", async () => {
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    const { outcome } = await deferredInstallPrompt.userChoice;
+    if (outcome === "accepted") {
+        showToast("📲 ¡App instalada!");
+        document.getElementById("install-app-btn").style.display = "none";
+    }
+    deferredInstallPrompt = null;
+});
+
+window.addEventListener("appinstalled", () => {
+    const installBtn = document.getElementById("install-app-btn");
+    if (installBtn) installBtn.style.display = "none";
+});
+
+
 // Inyectar estilos dinámicos (evita depender de la subida de index.css al hosting)
 document.head.insertAdjacentHTML('beforeend', `<style>
 .song-number{font-size:.7rem;font-weight:700;color:var(--text-secondary);min-width:22px;margin-right:6px;font-variant-numeric:tabular-nums;opacity:.6}
