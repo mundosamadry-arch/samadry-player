@@ -2608,7 +2608,15 @@ function switchPlaylistTab(tabId) {
     
     const key = tabId.replace("tab-", "");
     currentPlaylistKey = key;
-    
+
+    // Salir de la vista de búsqueda/favoritos al elegir una pestaña
+    viewMode = "tabs";
+    searchQuery = "";
+    const searchInput = document.getElementById("song-search");
+    if (searchInput) searchInput.value = "";
+    const favBtn = document.getElementById("fav-toggle-btn");
+    if (favBtn) favBtn.classList.remove("active");
+
     // Ocultar / Mostrar zona de subida local (elemento opcional, puede no existir)
     const uploader = document.getElementById("local-uploader-area");
     if (uploader) {
@@ -2641,12 +2649,127 @@ function getPlaylistLabel(key) {
     return labels[key] || key;
 }
 
+// ============================================================
+// BUSCADOR Y FAVORITOS
+// ============================================================
+let viewMode = "tabs"; // "tabs" | "search" | "favorites"
+let searchQuery = "";
+let favorites = new Set(JSON.parse(localStorage.getItem("samadry_favorites") || "[]"));
+
+function songKey(song) {
+    return song.url || `${song.title}|${song.artist}`;
+}
+function isFavorite(song) {
+    return favorites.has(songKey(song));
+}
+function toggleFavorite(song) {
+    const k = songKey(song);
+    if (favorites.has(k)) favorites.delete(k);
+    else favorites.add(k);
+    localStorage.setItem("samadry_favorites", JSON.stringify([...favorites]));
+}
+
+// Constructor de fila de canción reutilizado por las 3 vistas
+function buildSongItem(song, key, index, showPlaylistLabel) {
+    song.playlistSource = key;
+    const isActive = currentTrackIndex === index && currentPlaylistKey === key;
+    const playing = isActive && !nativePlayer.paused;
+    const tagText = showPlaylistLabel ? getPlaylistLabel(key) : (song.tag || song.artist);
+
+    const item = document.createElement("div");
+    item.className = `song-item ${isActive ? 'active' : ''}`;
+    item.innerHTML = `
+        <span class="song-number">${String(index + 1).padStart(2, '0')}</span>
+        <span class="song-play-icon">${playing ? '🔊' : '▶️'}</span>
+        <div class="song-details">
+            <div class="song-title">${song.title}</div>
+            <span class="song-tag">${tagText}</span>
+        </div>
+        <span class="song-duration">${song.duration || ''}</span>
+        <button class="song-fav ${isFavorite(song) ? 'is-fav' : ''}" title="Marcar favorita">${isFavorite(song) ? '⭐' : '☆'}</button>
+    `;
+
+    item.querySelector(".song-fav").addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleFavorite(song);
+        refreshCurrentView();
+    });
+
+    item.addEventListener("click", () => {
+        if (currentTrackIndex === index && currentPlaylistKey === key) {
+            togglePlay();
+        } else {
+            exitSearchView();
+            loadTrack(key, index);
+            const tabBtn = document.getElementById(`tab-${key}`);
+            if (tabBtn) switchPlaylistTab(`tab-${key}`);
+            else renderSongsList();
+            playCurrentTrack();
+        }
+    });
+
+    return item;
+}
+
+function searchAllSongs(q) {
+    const query = q.trim().toLowerCase();
+    const res = [];
+    Object.keys(PLAYLISTS).forEach((key) => {
+        if (key === "locales") return;
+        PLAYLISTS[key].forEach((song, index) => {
+            const hay = `${song.title} ${song.artist} ${song.tag || ""}`.toLowerCase();
+            if (hay.includes(query)) res.push({ song, key, index });
+        });
+    });
+    return res;
+}
+
+function getAllFavoriteSongs() {
+    const res = [];
+    Object.keys(PLAYLISTS).forEach((key) => {
+        if (key === "locales") return;
+        PLAYLISTS[key].forEach((song, index) => {
+            if (isFavorite(song)) res.push({ song, key, index });
+        });
+    });
+    return res;
+}
+
+function renderResultsList(items, emptyMsg) {
+    const listEl = document.getElementById("playlist-content");
+    listEl.innerHTML = "";
+    if (items.length === 0) {
+        listEl.innerHTML = `<div class="empty-state"><p style="text-align:center;color:var(--text-secondary);padding:30px 10px;font-size:.85rem;">${emptyMsg}</p></div>`;
+        return;
+    }
+    items.forEach(({ song, key, index }) => listEl.appendChild(buildSongItem(song, key, index, true)));
+}
+
+function refreshCurrentView() {
+    if (viewMode === "search") {
+        renderResultsList(searchAllSongs(searchQuery), `Sin resultados para «${searchQuery}»`);
+    } else if (viewMode === "favorites") {
+        renderResultsList(getAllFavoriteSongs(), "Aún no tienes favoritas.<br>Pulsa la ☆ junto a una canción para guardarla.");
+    } else {
+        renderSongsList();
+    }
+}
+
+function exitSearchView() {
+    viewMode = "tabs";
+    searchQuery = "";
+    const si = document.getElementById("song-search");
+    if (si) si.value = "";
+    const fb = document.getElementById("fav-toggle-btn");
+    if (fb) fb.classList.remove("active");
+}
+
 function renderSongsList() {
     const listEl = document.getElementById("playlist-content");
     listEl.innerHTML = "";
-    
+
     const songs = PLAYLISTS[currentPlaylistKey];
-    
+
     if (!songs || songs.length === 0) {
         if (currentPlaylistKey === "locales") {
             listEl.innerHTML = `
@@ -2668,38 +2791,15 @@ function renderSongsList() {
         }
         return;
     }
-    
-    songs.forEach((song, idx) => {
-        const item = document.createElement("div");
 
-        // Asignar campo de origen a la estructura de la canción si no existe
-        song.playlistSource = currentPlaylistKey;
-        item.className = `song-item ${currentTrackIndex === idx && currentPlaylistKey === song.playlistSource ? 'active' : ''}`;
-        
-        item.innerHTML = `
-            <span class="song-number">${String(idx + 1).padStart(2, '0')}</span>
-            <span class="song-play-icon">${currentTrackIndex === idx && currentPlaylistKey === song.playlistSource && !nativePlayer.paused ? '🔊' : '▶️'}</span>
-            <div class="song-details">
-                <div class="song-title">${song.title}</div>
-                <span class="song-tag">${song.tag || song.artist}</span>
-            </div>
-            <span class="song-duration">${song.duration}</span>
-        `;
-        
-        item.addEventListener("click", () => {
-            if (currentTrackIndex === idx && currentPlaylistKey === song.playlistSource) {
-                togglePlay();
-            } else {
-                loadTrack(currentPlaylistKey, idx);
-                playCurrentTrack();
-            }
-        });
-        
-        listEl.appendChild(item);
+    songs.forEach((song, idx) => {
+        listEl.appendChild(buildSongItem(song, currentPlaylistKey, idx, false));
     });
 }
 
 function updateActiveSongHighlight() {
+    // El resaltado por índice solo es fiable en la vista de pestañas
+    if (viewMode !== "tabs") return;
     // Buscar todos los elementos de canción y actualizar
     const items = document.querySelectorAll(".song-item");
     items.forEach((item, idx) => {
@@ -3103,6 +3203,37 @@ document.getElementById("fullscreen-btn").addEventListener("click", () => {
     document.getElementById(`tab-${key}`).addEventListener("click", () => switchPlaylistTab(`tab-${key}`));
 });
 
+// Buscador de canciones (en todas las listas)
+document.getElementById("song-search")?.addEventListener("input", (e) => {
+    searchQuery = e.target.value;
+    const favBtn = document.getElementById("fav-toggle-btn");
+    if (favBtn) favBtn.classList.remove("active");
+    if (searchQuery.trim()) {
+        viewMode = "search";
+        renderResultsList(searchAllSongs(searchQuery), `Sin resultados para «${searchQuery}»`);
+    } else {
+        viewMode = "tabs";
+        renderSongsList();
+    }
+});
+
+// Botón de favoritas (mostrar/ocultar la vista de favoritas)
+document.getElementById("fav-toggle-btn")?.addEventListener("click", () => {
+    const favBtn = document.getElementById("fav-toggle-btn");
+    if (viewMode === "favorites") {
+        viewMode = "tabs";
+        favBtn.classList.remove("active");
+        renderSongsList();
+    } else {
+        viewMode = "favorites";
+        favBtn.classList.add("active");
+        const si = document.getElementById("song-search");
+        if (si) si.value = "";
+        searchQuery = "";
+        renderResultsList(getAllFavoriteSongs(), "Aún no tienes favoritas.<br>Pulsa la ☆ junto a una canción para guardarla.");
+    }
+});
+
 // Botones de acceso rápido
 document.getElementById("btn-tarta")?.addEventListener("click", async () => {
     loadTrack("tarta", 0);
@@ -3356,6 +3487,15 @@ document.head.insertAdjacentHTML('beforeend', `<style>
 .song-number{font-size:.7rem;font-weight:700;color:var(--text-secondary);min-width:22px;margin-right:6px;font-variant-numeric:tabular-nums;opacity:.6}
 .song-item.active .song-number{color:var(--neon-cyan);opacity:1}
 .soundboard-theme-badge{display:inline-block;font-size:.62rem;font-weight:600;padding:2px 8px;border-radius:20px;background:rgba(157,78,221,.18);border:1px solid rgba(157,78,221,.4);color:#c77dff;letter-spacing:.03em;vertical-align:middle;margin-left:6px;transition:background .3s,color .3s}
+/* Buscador y favoritos */
+.song-search-bar{display:flex;gap:8px;margin-bottom:10px}
+#song-search{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;color:#fff;padding:9px 12px;font-size:.9rem;outline:none}
+#song-search::placeholder{color:#9aa6c0}
+#song-search:focus{border-color:#9d4edd}
+#fav-toggle-btn{flex:none;width:46px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#f7b500;font-size:1.15rem;cursor:pointer;transition:background .2s,border-color .2s}
+#fav-toggle-btn.active{background:rgba(247,181,0,.2);border-color:rgba(247,181,0,.5)}
+.song-fav{flex:none;background:none;border:none;cursor:pointer;font-size:1.1rem;color:#f7b500;padding:4px 6px;line-height:1;opacity:.9}
+.song-fav.is-fav{filter:drop-shadow(0 0 4px rgba(247,181,0,.55))}
 </style>`);
 
 // Estilos del Modo Escenario (botones gigantes para usar en directo)
