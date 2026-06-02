@@ -49,6 +49,17 @@
                     </select>
                 </div>
 
+                <!-- Selector de Crossfade -->
+                <div class="control-group">
+                    <label for="crossfade-select">Crossfade:</label>
+                    <select id="crossfade-select" class="custom-select">
+                        <option value="0">Off</option>
+                        <option value="2">2s</option>
+                        <option value="3" selected>3s</option>
+                        <option value="5">5s</option>
+                    </select>
+                </div>
+
                 <!-- Master Volume -->
                 <div class="control-group master-volume-container">
                     <span class="volume-icon">🔊</span>
@@ -120,6 +131,7 @@
                         <button id="player-play-btn" class="player-btn play-main-btn" title="Reproducir">▶️</button>
                         <button id="player-next-btn" class="player-btn" title="Siguiente">⏭️</button>
                         <button id="player-stop-btn" class="player-btn" title="Detener">⏹️</button>
+                        <button id="player-duck-btn" class="player-btn toggle-btn" title="Bajar música para hablar">🔉</button>
                     </div>
                 </div>
 

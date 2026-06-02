@@ -1940,6 +1940,93 @@ let isLooping = false;
 let activePlaybackSource = "native";
 let currentNativeObjectUrl = null;
 
+// --- TRANSICIONES SUAVES (crossfade, fundidos, ducking) ---
+let isDucked = false; // música bajada para hablar al público
+let crossfadeDuration = parseFloat(localStorage.getItem("samadry_crossfade") ?? "3");
+let crossfadePlayer = null; // elemento secundario para la cola de la pista saliente
+let crossfadeArmed = false; // evita disparar el crossfade dos veces para la misma pista
+
+// Fundido de volumen suave sobre un elemento <audio>
+function fadeVolume(el, from, to, ms, done) {
+    if (!el) return;
+    if (el._fadeTimer) { clearInterval(el._fadeTimer); el._fadeTimer = null; }
+    const clamp = (v) => Math.max(0, Math.min(1, v));
+    const steps = Math.max(1, Math.round(ms / 40));
+    let i = 0;
+    el.volume = clamp(from);
+    el._fadeTimer = setInterval(() => {
+        i++;
+        el.volume = clamp(from + (to - from) * (i / steps));
+        if (i >= steps) {
+            clearInterval(el._fadeTimer);
+            el._fadeTimer = null;
+            if (done) done();
+        }
+    }, 40);
+}
+
+// Volumen objetivo según el slider maestro y si está "bajado para hablar"
+function getTargetVolume() {
+    const base = parseFloat(document.getElementById("master-volume-slider").value);
+    return isDucked ? base * 0.15 : base;
+}
+
+// Crossfade: la pista actual se desvanece en un elemento secundario mientras
+// la siguiente entra en el reproductor principal.
+function startCrossfade(remaining) {
+    const list = PLAYLISTS[currentPlaylistKey];
+    if (!list || list.length < 2) return;
+
+    let nextIndex = currentTrackIndex + 1;
+    if (nextIndex >= list.length) nextIndex = 0;
+
+    const fadeMs = Math.min(crossfadeDuration, remaining) * 1000;
+    const startVol = nativePlayer.volume;
+    const curSrc = nativePlayer.currentSrc || nativePlayer.src;
+    const curTime = nativePlayer.currentTime;
+
+    // 1. Mover la cola de la pista actual a un elemento secundario que se desvanece
+    if (curSrc) {
+        const outgoing = crossfadePlayer || (crossfadePlayer = new Audio());
+        outgoing.src = curSrc;
+        const seekAndPlay = () => {
+            try { outgoing.currentTime = curTime; } catch (e) {}
+            outgoing.play()
+                .then(() => fadeVolume(outgoing, startVol, 0, fadeMs, () => { try { outgoing.pause(); } catch (e) {} }))
+                .catch(() => {});
+        };
+        if (outgoing.readyState >= 1) seekAndPlay();
+        else outgoing.addEventListener("loadedmetadata", seekAndPlay, { once: true });
+    }
+
+    // 2. La pista siguiente entra en el reproductor principal (loadTrack pone crossfadeArmed=false)
+    loadTrack(currentPlaylistKey, nextIndex);
+    nativePlayer.volume = 0;
+    nativePlayer.play()
+        .then(() => {
+            requestWakeLock();
+            document.getElementById("player-play-btn").textContent = "⏸️";
+            document.getElementById("track-disc").style.animationPlayState = "running";
+            fadeVolume(nativePlayer, 0, getTargetVolume(), fadeMs);
+            updateActiveSongHighlight();
+        })
+        .catch(() => {});
+}
+
+// Bajar/subir la música suavemente para hablar al público
+function toggleDuck() {
+    isDucked = !isDucked;
+    const btn = document.getElementById("player-duck-btn");
+    if (btn) btn.classList.toggle("active-loop", isDucked);
+
+    if (isSpotifyPlaybackActive()) {
+        spotifyPlayer.setVolume(getTargetVolume());
+    } else if (!nativePlayer.paused) {
+        fadeVolume(nativePlayer, nativePlayer.volume, getTargetVolume(), 500);
+    }
+    showToast(isDucked ? "🔉 Música bajada para hablar" : "🔊 Música restaurada");
+}
+
 function isSpotifyPlaybackActive() {
     return activePlaybackSource === "spotify" && spotifyConnected && spotifyPlayer;
 }
@@ -2030,6 +2117,7 @@ function loadTrack(playlistKey, index) {
     currentPlaylistKey = playlistKey;
     currentTrackIndex = index;
     activePlaybackSource = "native";
+    crossfadeArmed = false; // nueva pista: rearmar el crossfade
     const track = list[index];
     
     setNativePlayerSource(track);
@@ -2064,10 +2152,15 @@ async function playCurrentTrack() {
     
     if (currentTrackIndex !== -1) {
         try {
+            // Cancelar cualquier fundido pendiente y arrancar desde 0 para entrar suave
+            if (nativePlayer._fadeTimer) { clearInterval(nativePlayer._fadeTimer); nativePlayer._fadeTimer = null; }
+            const target = getTargetVolume();
+            nativePlayer.volume = 0;
             await nativePlayer.play();
             initAudioContext();
             connectNativePlayerToVisualizerIfSafe();
             requestWakeLock();
+            fadeVolume(nativePlayer, 0, target, 600);
             playBtn.textContent = "⏸️";
             document.getElementById("track-disc").style.animationPlayState = "running";
             updateActiveSongHighlight();
@@ -2090,7 +2183,8 @@ function pauseCurrentTrack() {
         return;
     }
     
-    nativePlayer.pause();
+    // Fundido de salida suave antes de pausar
+    fadeVolume(nativePlayer, nativePlayer.volume, 0, 350, () => nativePlayer.pause());
     releaseWakeLock();
     playBtn.textContent = "▶️";
     document.getElementById("track-disc").style.animationPlayState = "paused";
@@ -2113,9 +2207,12 @@ function stopTrack() {
         spotifyPlayer.pause();
         return;
     }
-    nativePlayer.pause();
+    // Fundido de salida suave antes de detener y reiniciar
+    fadeVolume(nativePlayer, nativePlayer.volume, 0, 300, () => {
+        nativePlayer.pause();
+        nativePlayer.currentTime = 0;
+    });
     releaseWakeLock();
-    nativePlayer.currentTime = 0;
     document.getElementById("player-play-btn").textContent = "▶️";
     document.getElementById("track-disc").style.animationPlayState = "paused";
     document.getElementById("audio-progress-slider").value = 0;
@@ -2167,9 +2264,19 @@ nativePlayer.addEventListener("timeupdate", () => {
         const percent = (nativePlayer.currentTime / nativePlayer.duration) * 100;
         progressSlider.value = percent;
         progressFill.style.width = `${percent}%`;
-        
+
         currentTimeText.textContent = formatTime(nativePlayer.currentTime);
         document.getElementById("audio-total-time").textContent = formatTime(nativePlayer.duration);
+
+        // Disparar crossfade cuando falta poco para el final
+        if (crossfadeDuration > 0 && !isLooping && !crossfadeArmed && activePlaybackSource === "native") {
+            const remaining = nativePlayer.duration - nativePlayer.currentTime;
+            const list = PLAYLISTS[currentPlaylistKey];
+            if (list && list.length > 1 && remaining > 0.1 && remaining <= crossfadeDuration) {
+                crossfadeArmed = true;
+                startCrossfade(remaining);
+            }
+        }
     }
 });
 
@@ -2186,10 +2293,13 @@ nativePlayer.addEventListener("ended", () => {
 // Manejador del volumen nativo y Spotify
 document.getElementById("master-volume-slider").addEventListener("input", (e) => {
     const vol = parseFloat(e.target.value);
-    nativePlayer.volume = vol;
+    const effective = isDucked ? vol * 0.15 : vol;
+    // Cancelar fundido en curso para que el slider mande
+    if (nativePlayer._fadeTimer) { clearInterval(nativePlayer._fadeTimer); nativePlayer._fadeTimer = null; }
+    nativePlayer.volume = effective;
     document.getElementById("master-volume-text").textContent = `${Math.round(vol * 100)}%`;
     if (spotifyConnected && spotifyPlayer) {
-        spotifyPlayer.setVolume(vol);
+        spotifyPlayer.setVolume(effective);
     }
 });
 
@@ -2865,6 +2975,20 @@ document.getElementById("player-play-btn").addEventListener("click", togglePlay)
 document.getElementById("player-prev-btn").addEventListener("click", playPrev);
 document.getElementById("player-next-btn").addEventListener("click", playNext);
 document.getElementById("player-stop-btn").addEventListener("click", stopTrack);
+
+// Botón "bajar para hablar" (ducking)
+document.getElementById("player-duck-btn")?.addEventListener("click", toggleDuck);
+
+// Selector de crossfade
+const crossfadeSelect = document.getElementById("crossfade-select");
+if (crossfadeSelect) {
+    crossfadeSelect.value = String(crossfadeDuration);
+    crossfadeSelect.addEventListener("change", (e) => {
+        crossfadeDuration = parseFloat(e.target.value);
+        localStorage.setItem("samadry_crossfade", String(crossfadeDuration));
+        showToast(crossfadeDuration > 0 ? `Crossfade: ${crossfadeDuration}s` : "Crossfade desactivado");
+    });
+}
 
 // Botón de Loop
 const loopBtn = document.getElementById("player-loop-btn");
