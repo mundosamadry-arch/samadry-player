@@ -1197,7 +1197,10 @@ const SOUNDBOARD_THEME_LABELS = {
     spiderman:    "🕷️ Spiderman",
 };
 
+let currentSoundboardSounds = GENERIC_SOUNDS; // sonidos visibles ahora (para el modo escenario)
+
 function renderSoundboard(sounds, label) {
+    currentSoundboardSounds = sounds;
     const grid = document.getElementById("soundboard-grid");
     if (!grid) return;
     grid.innerHTML = "";
@@ -1245,6 +1248,56 @@ function renderSoundboard(sounds, label) {
             sfxSelect.appendChild(opt);
         });
     }
+
+    // Si el modo escenario está abierto, refrescar también sus pads
+    const stage = document.getElementById("stage-mode");
+    if (stage && !stage.classList.contains("hidden")) renderStageSoundboard();
+}
+
+// ============================================================
+// MODO ESCENARIO (botones gigantes para usar en directo)
+// ============================================================
+function renderStageSoundboard() {
+    const grid = document.getElementById("stage-sounds");
+    if (!grid) return;
+    grid.innerHTML = "";
+    (currentSoundboardSounds || GENERIC_SOUNDS).forEach((sound) => {
+        const pad = document.createElement("button");
+        pad.className = "stage-pad";
+        pad.innerHTML = `<span class="e">${sound.emoji}</span><span class="n">${sound.name}</span>`;
+        pad.addEventListener("click", () => {
+            triggerSFX(sound.id);
+            pad.classList.add("triggered");
+            setTimeout(() => pad.classList.remove("triggered"), 150);
+        });
+        grid.appendChild(pad);
+    });
+}
+
+function syncStageInfo() {
+    const t = document.getElementById("stage-track-title");
+    const s = document.getElementById("stage-track-sub");
+    if (t) t.textContent = document.getElementById("track-title").textContent;
+    if (s) s.textContent = document.getElementById("track-subtitle").textContent;
+}
+
+function openStageMode() {
+    const el = document.getElementById("stage-mode");
+    if (!el) return;
+    renderStageSoundboard();
+    syncStageInfo();
+    const pb = document.getElementById("stage-play");
+    if (pb) pb.textContent = nativePlayer.paused ? "▶️" : "⏸️";
+    const db = document.getElementById("stage-duck");
+    if (db) db.classList.toggle("active-duck", isDucked);
+    el.classList.remove("hidden");
+    try { document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); } catch (e) {}
+}
+
+function closeStageMode() {
+    const el = document.getElementById("stage-mode");
+    if (el) el.classList.add("hidden");
+    if (document.fullscreenElement) { try { document.exitFullscreen(); } catch (e) {} }
 }
 
 // --- SPEECH RECOGNITION (VOICE ASSISTANT "OYE SAMADRY") ---
@@ -2018,6 +2071,8 @@ function toggleDuck() {
     isDucked = !isDucked;
     const btn = document.getElementById("player-duck-btn");
     if (btn) btn.classList.toggle("active-loop", isDucked);
+    const stageBtn = document.getElementById("stage-duck");
+    if (stageBtn) stageBtn.classList.toggle("active-duck", isDucked);
 
     if (isSpotifyPlaybackActive()) {
         spotifyPlayer.setVolume(getTargetVolume());
@@ -2134,6 +2189,9 @@ function loadTrack(playlistKey, index) {
     
     // Resaltar canción activa en la lista
     updateActiveSongHighlight();
+
+    // Sincronizar info en el modo escenario
+    syncStageInfo();
 }
 
 async function playCurrentTrack() {
@@ -2264,6 +2322,8 @@ nativePlayer.addEventListener("timeupdate", () => {
         const percent = (nativePlayer.currentTime / nativePlayer.duration) * 100;
         progressSlider.value = percent;
         progressFill.style.width = `${percent}%`;
+        const stageFill = document.getElementById("stage-progress-fill");
+        if (stageFill) stageFill.style.width = `${percent}%`;
 
         currentTimeText.textContent = formatTime(nativePlayer.currentTime);
         document.getElementById("audio-total-time").textContent = formatTime(nativePlayer.duration);
@@ -2278,6 +2338,16 @@ nativePlayer.addEventListener("timeupdate", () => {
             }
         }
     }
+});
+
+// Sincronizar el botón gigante de play/pausa del modo escenario con el audio real
+nativePlayer.addEventListener("play", () => {
+    const b = document.getElementById("stage-play");
+    if (b) b.textContent = "⏸️";
+});
+nativePlayer.addEventListener("pause", () => {
+    const b = document.getElementById("stage-play");
+    if (b) b.textContent = "▶️";
 });
 
 // Al terminar la pista, reproducir la siguiente o repetir
@@ -2979,6 +3049,22 @@ document.getElementById("player-stop-btn").addEventListener("click", stopTrack);
 // Botón "bajar para hablar" (ducking)
 document.getElementById("player-duck-btn")?.addEventListener("click", toggleDuck);
 
+// Modo Escenario
+document.getElementById("stage-mode-btn")?.addEventListener("click", openStageMode);
+document.getElementById("stage-exit-btn")?.addEventListener("click", closeStageMode);
+document.getElementById("stage-prev")?.addEventListener("click", playPrev);
+document.getElementById("stage-next")?.addEventListener("click", playNext);
+document.getElementById("stage-play")?.addEventListener("click", togglePlay);
+document.getElementById("stage-duck")?.addEventListener("click", toggleDuck);
+document.getElementById("stage-tarta")?.addEventListener("click", async () => {
+    loadTrack("tarta", 0);
+    await playCurrentTrack();
+});
+document.getElementById("stage-mundo")?.addEventListener("click", async () => {
+    loadTrack("mundo_samadry", 0);
+    await playCurrentTrack();
+});
+
 // Selector de crossfade
 const crossfadeSelect = document.getElementById("crossfade-select");
 if (crossfadeSelect) {
@@ -3270,6 +3356,34 @@ document.head.insertAdjacentHTML('beforeend', `<style>
 .song-number{font-size:.7rem;font-weight:700;color:var(--text-secondary);min-width:22px;margin-right:6px;font-variant-numeric:tabular-nums;opacity:.6}
 .song-item.active .song-number{color:var(--neon-cyan);opacity:1}
 .soundboard-theme-badge{display:inline-block;font-size:.62rem;font-weight:600;padding:2px 8px;border-radius:20px;background:rgba(157,78,221,.18);border:1px solid rgba(157,78,221,.4);color:#c77dff;letter-spacing:.03em;vertical-align:middle;margin-left:6px;transition:background .3s,color .3s}
+</style>`);
+
+// Estilos del Modo Escenario (botones gigantes para usar en directo)
+document.head.insertAdjacentHTML('beforeend', `<style>
+#stage-mode{position:fixed;inset:0;z-index:100000;background:radial-gradient(circle at 50% 0%,#16121f,#09090e 70%);display:flex;flex-direction:column;padding:14px;gap:12px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#stage-mode.hidden{display:none}
+.stage-top{display:flex;align-items:center;gap:12px;padding-top:8px}
+.stage-track{flex:1;min-width:0}
+.stage-track-title{font-size:1.6rem;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.1}
+.stage-track-sub{font-size:.9rem;color:#9aa6c0;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.stage-exit{flex:none;width:56px;height:56px;border-radius:16px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#fff;font-size:1.5rem;cursor:pointer}
+.stage-exit:active{transform:scale(.93)}
+.stage-progress{height:10px;border-radius:8px;background:rgba(255,255,255,.1);overflow:hidden}
+.stage-progress-fill{height:100%;width:0;background:linear-gradient(90deg,#7b2ff7,#23d5e8);transition:width .2s linear}
+.stage-transport{display:flex;gap:12px}
+.stage-btn{flex:1;min-height:88px;border-radius:20px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#fff;font-size:2rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .08s,background .2s}
+.stage-btn:active{transform:scale(.95)}
+.stage-btn.play{flex:1.7;font-size:2.8rem;background:linear-gradient(135deg,#7b2ff7,#23d5e8);border:none}
+.stage-btn.duck.active-duck{background:linear-gradient(135deg,#f7b500,#ff7a00);color:#1a1200}
+.stage-quick{display:flex;gap:12px}
+.stage-quick .stage-btn{min-height:66px;font-size:1.15rem;font-weight:700}
+.stage-section-label{font-size:.72rem;color:#9aa6c0;text-transform:uppercase;letter-spacing:.09em;margin:2px 0 -2px;opacity:.75}
+.stage-sounds{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding-bottom:8px}
+.stage-pad{min-height:90px;border-radius:18px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;transition:transform .08s,background .15s}
+.stage-pad:active,.stage-pad.triggered{transform:scale(.92);background:rgba(123,47,247,.4)}
+.stage-pad .e{font-size:2rem;line-height:1}
+.stage-pad .n{font-size:.78rem;font-weight:700;text-align:center;padding:0 4px}
+@media(min-width:700px){.stage-track-title{font-size:2.1rem}.stage-sounds{grid-template-columns:repeat(4,1fr)}}
 </style>`);
 
 window.addEventListener("DOMContentLoaded", async () => {

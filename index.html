@@ -69,6 +69,7 @@
 
                 <button id="install-app-btn" class="icon-btn" title="Instalar como app" style="display:none">📲</button>
                 <button id="download-offline-btn" class="icon-btn" title="Descargar canciones para usar sin conexión">⬇️</button>
+                <button id="stage-mode-btn" class="icon-btn" title="Modo Escenario (botones grandes)">🎬</button>
                 <button id="settings-btn" class="icon-btn" title="Ajustes de Spotify">⚙️</button>
                 <button id="fullscreen-btn" class="icon-btn" title="Pantalla Completa">📺</button>
             </div>
@@ -219,6 +220,34 @@
     <!-- OVERLAY CUENTA ATRÁS -->
     <div id="countdown-overlay" class="countdown-overlay hidden">
         <div id="countdown-number" class="countdown-number">3</div>
+    </div>
+
+    <!-- MODO ESCENARIO (botones gigantes para usar en directo) -->
+    <div id="stage-mode" class="hidden">
+        <div class="stage-top">
+            <div class="stage-track">
+                <div id="stage-track-title" class="stage-track-title">Selecciona una pista</div>
+                <div id="stage-track-sub" class="stage-track-sub">Listado temático</div>
+            </div>
+            <button id="stage-exit-btn" class="stage-exit" title="Salir del modo escenario">✕</button>
+        </div>
+
+        <div class="stage-progress"><div id="stage-progress-fill" class="stage-progress-fill"></div></div>
+
+        <div class="stage-transport">
+            <button id="stage-prev" class="stage-btn" title="Anterior">⏮️</button>
+            <button id="stage-play" class="stage-btn play" title="Reproducir / Pausar">▶️</button>
+            <button id="stage-next" class="stage-btn" title="Siguiente">⏭️</button>
+            <button id="stage-duck" class="stage-btn duck" title="Bajar música para hablar">🔉</button>
+        </div>
+
+        <div class="stage-quick">
+            <button id="stage-tarta" class="stage-btn">🎂 Tarta</button>
+            <button id="stage-mundo" class="stage-btn">🌟 Mundo Samadry</button>
+        </div>
+
+        <div class="stage-section-label">Banco de sonidos</div>
+        <div id="stage-sounds" class="stage-sounds"></div>
     </div>
 
     <!-- AUDIO ELEMENT NATIVO (PARA ARCHIVOS Y STREAMING) -->
