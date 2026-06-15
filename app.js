@@ -1998,6 +1998,7 @@ let isDucked = false; // música bajada para hablar al público
 let crossfadeDuration = parseFloat(localStorage.getItem("samadry_crossfade") ?? "3");
 let crossfadePlayer = null; // elemento secundario para la cola de la pista saliente
 let crossfadeArmed = false; // evita disparar el crossfade dos veces para la misma pista
+let userWantsPlayback = false; // intención real de reproducir (sobrevive a los fundidos)
 
 // Fundido de volumen suave sobre un elemento <audio>
 function fadeVolume(el, from, to, ms, done) {
@@ -2038,8 +2039,11 @@ function startCrossfade(remaining) {
     const curSrc = nativePlayer.currentSrc || nativePlayer.src;
     const curTime = nativePlayer.currentTime;
 
+    userWantsPlayback = true;
+
     // 1. Mover la cola de la pista actual a un elemento secundario que se desvanece
-    if (curSrc) {
+    //    (no aplicable a archivos locales: loadTrack revoca su URL blob:)
+    if (curSrc && !curSrc.startsWith("blob:")) {
         const outgoing = crossfadePlayer || (crossfadePlayer = new Audio());
         outgoing.src = curSrc;
         const seekAndPlay = () => {
@@ -2207,8 +2211,9 @@ async function playCurrentTrack() {
     if (currentTrackIndex === -1 && PLAYLISTS[currentPlaylistKey].length > 0) {
         loadTrack(currentPlaylistKey, 0);
     }
-    
+
     if (currentTrackIndex !== -1) {
+        userWantsPlayback = true;
         try {
             // Cancelar cualquier fundido pendiente y arrancar desde 0 para entrar suave
             if (nativePlayer._fadeTimer) { clearInterval(nativePlayer._fadeTimer); nativePlayer._fadeTimer = null; }
@@ -2240,7 +2245,8 @@ function pauseCurrentTrack() {
         spotifyPlayer.pause();
         return;
     }
-    
+
+    userWantsPlayback = false;
     // Fundido de salida suave antes de pausar
     fadeVolume(nativePlayer, nativePlayer.volume, 0, 350, () => nativePlayer.pause());
     releaseWakeLock();
@@ -2253,10 +2259,11 @@ function togglePlay() {
         spotifyPlayer.togglePlay();
         return;
     }
-    if (nativePlayer.paused) {
-        playCurrentTrack();
-    } else {
+    // Usar la intención real, no nativePlayer.paused (que sigue false durante el fundido)
+    if (userWantsPlayback) {
         pauseCurrentTrack();
+    } else {
+        playCurrentTrack();
     }
 }
 
@@ -2265,6 +2272,7 @@ function stopTrack() {
         spotifyPlayer.pause();
         return;
     }
+    userWantsPlayback = false;
     // Fundido de salida suave antes de detener y reiniciar
     fadeVolume(nativePlayer, nativePlayer.volume, 0, 300, () => {
         nativePlayer.pause();
@@ -2368,10 +2376,23 @@ document.getElementById("master-volume-slider").addEventListener("input", (e) =>
     if (nativePlayer._fadeTimer) { clearInterval(nativePlayer._fadeTimer); nativePlayer._fadeTimer = null; }
     nativePlayer.volume = effective;
     document.getElementById("master-volume-text").textContent = `${Math.round(vol * 100)}%`;
+    localStorage.setItem("samadry_volume", String(vol));
     if (spotifyConnected && spotifyPlayer) {
         spotifyPlayer.setVolume(effective);
     }
 });
+
+// Restaurar el volumen guardado de sesiones anteriores
+(function restoreSavedVolume() {
+    const saved = localStorage.getItem("samadry_volume");
+    if (saved === null) return;
+    const vol = parseFloat(saved);
+    if (isNaN(vol)) return;
+    const slider = document.getElementById("master-volume-slider");
+    slider.value = vol;
+    nativePlayer.volume = vol;
+    document.getElementById("master-volume-text").textContent = `${Math.round(vol * 100)}%`;
+})();
 
 // Buscar en el reproductor al mover el control deslizante
 document.getElementById("audio-progress-slider").addEventListener("input", (e) => {
@@ -3332,11 +3353,20 @@ spotifyConnectBtn.addEventListener("click", async () => {
 
 // --- ATADOS DE TECLADO (HOTKEYS) ---
 window.addEventListener("keydown", (e) => {
+    // Escape: salir del Modo Escenario (funciona aunque haya un campo enfocado)
+    if (e.key === "Escape") {
+        const sm = document.getElementById("stage-mode");
+        if (sm && !sm.classList.contains("hidden")) {
+            closeStageMode();
+            return;
+        }
+    }
+
     // Si el usuario está escribiendo en el cuadro de notas, no capturar atajos
     if (document.activeElement === liveNotes || document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "SELECT") {
         return;
     }
-    
+
     // Barra espaciadora: Play/Pause reproductor
     if (e.code === "Space") {
         e.preventDefault();
