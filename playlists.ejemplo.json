@@ -1,0 +1,67 @@
+{
+  "juegos": [
+    {
+      "title": "I'm Still Standing",
+      "artist": "Mundo Samadry",
+      "file": "juegos-generica/01-I_m_Still_Standing.mp3",
+      "tag": "Juegos Generica"
+    },
+    {
+      "title": "Algo Asi Quiero Yo",
+      "artist": "Mundo Samadry",
+      "file": "juegos-generica/02-Algo_Asi_Quiero_Yo.mp3",
+      "tag": "Juegos Generica"
+    }
+  ],
+
+  "piratas": [
+    {
+      "title": "Nombre de la cancion 1",
+      "artist": "Mundo Samadry",
+      "file": "piratas/01-nombre-cancion.mp3",
+      "tag": "Piratas"
+    },
+    {
+      "title": "Nombre de la cancion 2",
+      "artist": "Mundo Samadry",
+      "file": "piratas/02-nombre-cancion.mp3",
+      "tag": "Piratas"
+    }
+  ],
+
+  "exploradores": [
+    {
+      "title": "Nombre de la cancion 1",
+      "artist": "Mundo Samadry",
+      "file": "exploradores/01-nombre-cancion.mp3",
+      "tag": "Exploradores"
+    }
+  ],
+
+  "bluey": [
+    {
+      "title": "Nombre de la cancion 1",
+      "artist": "Mundo Samadry",
+      "file": "bluey/01-nombre-cancion.mp3",
+      "tag": "Bluey"
+    }
+  ],
+
+  "kpop": [
+    {
+      "title": "Nombre de la cancion 1",
+      "artist": "Mundo Samadry",
+      "file": "kpop/01-nombre-cancion.mp3",
+      "tag": "Kpop"
+    }
+  ],
+
+  "spiderman": [
+    {
+      "title": "Nombre de la cancion 1",
+      "artist": "Mundo Samadry",
+      "file": "spiderman/01-nombre-cancion.mp3",
+      "tag": "Spiderman"
+    }
+  ]
+}
