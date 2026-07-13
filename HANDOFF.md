@@ -9,7 +9,7 @@ Ultima actualizacion: 2026-07-13
 - Hay seis listas de hosting: Juegos, Piratas, Exploradores, Bluey, Kpop y Spiderman.
 - `catalogo.html` permite generar `playlists.json` sin escribir JSON manualmente.
 - El Modo Escenario permite elegir lista, reproducir, bajar volumen, activar voz, descargar una lista offline y lanzar efectos.
-- La voz procesa solo frases terminadas, evita ordenes duplicadas y baja temporalmente la musica al reconocer "Samadry".
+- La voz procesa solo frases terminadas y evita ordenes duplicadas. Todos los comandos son directos; decir "Samadry" es opcional.
 - La app incluye un listado visible de comandos de voz. El animador puede añadir frases alternativas y eliminarlas; se guardan en `localStorage` con la clave `samadry_voice_commands`.
 - Hay comandos directos para iniciar cualquiera de las seis listas del hosting.
 - Spotify sigue siendo opcional y requiere una cuenta Premium por animador.

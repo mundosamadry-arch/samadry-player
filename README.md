@@ -2,7 +2,7 @@
 
 ¡Bienvenido al **SamadryPlayer**! Esta es una aplicación web ligera, responsiva y diseñada específicamente para que los animadores de eventos infantiles musicales controlen todo su show en vivo desde una tablet, ordenador o portátil.
 
-Esta versión incluye integración avanzada con **Spotify Premium** y un **Asistente de Voz Nivel Animación ("Oye Samadry")** que permite controlar efectos y reproducir canciones a manos libres sobre el escenario.
+Esta versión incluye integración avanzada con **Spotify Premium** y un **Asistente de Voz con comandos directos** que permite controlar efectos y reproducir canciones a manos libres sobre el escenario.
 
 ---
 
@@ -43,41 +43,41 @@ Para poder reproducir música directamente desde tu cuenta Premium de Spotify de
 
 ---
 
-## 🎤 Asistente de Voz "Oye Samadry"
+## 🎤 Asistente de Voz con comandos directos
 
 Para activar el asistente de voz, haz clic en el icono del **Micrófono (🎙️)** en el encabezado y concede los permisos de micrófono al navegador. Cuando esté activo, el botón parpadeará en color rojo neón.
 
 El botón **Comandos (📋)** abre el listado completo dentro de la app. Desde esa pantalla cada animador puede añadir frases alternativas para una función y eliminarlas después. Estas frases se guardan solo en el dispositivo donde se crean.
 
 ### 🎮 El Comando del Juego ("Preparados, Listos")
-Este comando es **libre** (no requiere decir "Samadry" antes) para que sea súper dinámico e interactivo:
+Todos los comandos son directos. No hay que decir "Samadry" antes.
 * **Di en voz alta**: *"¡Preparados, listos!"* o *"¡Preparados, listos, ya!"*
 
 También se puede iniciar directamente cualquier lista diciendo *"empieza piratas"*, *"empieza exploradores"*, *"empieza Bluey"*, *"empieza Kpop"* o *"empieza Spiderman"*.
 * **Efecto**: La primera canción de la lista **Juegos** empieza directamente, sin cuenta atrás.
 
-### 🗣️ Comandos con Activador ("Oye Samadry")
-Dí en voz alta el activador **"Samadry"** seguido de la acción:
+### 🗣️ Comandos directos
+Di en voz alta la acción mientras el micrófono de la app esté activo:
 
 #### 1. Reproducción Musical (Spotify / Local)
-* *"Samadry, pon la canción de Chayanne Madre Tierra"* -> Buscará el tema en Spotify y lo reproducirá a través de la app. Si no estás conectado a Spotify, buscará coincidencias en tu playlist local de demostración.
-* *"Samadry, pon la canción de Mundo Samadry"*
-* *"Samadry, pausa"* o *"Samadry, para la música"* -> Detiene la canción activa.
-* *"Samadry, reproduce"* o *"Samadry, continúa"* -> Reanuda la música.
-* *"Samadry, siguiente"* o *"Samadry, salta"* -> Pasa a la siguiente canción de la lista.
-* *"Samadry, anterior"* -> Vuelve a la canción previa.
+* *"Pon la canción de Chayanne Madre Tierra"* -> Buscará el tema en Spotify y lo reproducirá a través de la app. Si no estás conectado a Spotify, buscará coincidencias en las listas disponibles.
+* *"Pon la canción de Mundo Samadry"*
+* *"Pausa"* o *"Para la música"* -> Detiene la canción activa.
+* *"Reproduce"* o *"Continúa"* -> Reanuda la música.
+* *"Siguiente"* o *"Salta"* -> Pasa a la siguiente canción de la lista.
+* *"Anterior"* -> Vuelve a la canción previa.
 
 #### 2. Lanzamiento de Efectos de Sonido
 Ideal cuando tienes las manos ocupadas con globos, maquillaje o micrófonos:
-* *"Samadry, aplausos"* -> Dispara el efecto 1 (Aplausos 👏)
-* *"Samadry, redoble"* -> Dispara el efecto 2 (Redoble de tambores 🥁)
-* *"Samadry, magia"* -> Dispara el efecto 3 (Efecto mágico 🪄)
-* *"Samadry, bocina"* -> Dispara el efecto 4 (Bocina cómica 🎺)
-* *"Samadry, risas"* -> Dispara el efecto 5 (Risas de niños 😆)
-* *"Samadry, suspenso"* -> Dispara el efecto 6 (Tensión musical 🕵️)
-* *"Samadry, ding"* -> Dispara el efecto 7 (Ding de éxito 🔔)
-* *"Samadry, fallo"* -> Dispara el efecto 8 (Error / Explosión 💥)
-* *"Samadry, silbato"* -> Dispara el efecto 9 (Silbato de árbitro 🗣️)
+* *"Aplausos"* -> Dispara el efecto 1 (Aplausos 👏)
+* *"Redoble"* -> Dispara el efecto 2 (Redoble de tambores 🥁)
+* *"Magia"* -> Dispara el efecto 3 (Efecto mágico 🪄)
+* *"Bocina"* -> Dispara el efecto 4 (Bocina cómica 🎺)
+* *"Risas"* -> Dispara el efecto 5 (Risas de niños 😆)
+* *"Suspenso"* -> Dispara el efecto 6 (Tensión musical 🕵️)
+* *"Ding"* -> Dispara el efecto 7 (Ding de éxito 🔔)
+* *"Fallo"* -> Dispara el efecto 8 (Error / Explosión 💥)
+* *"Silbato"* -> Dispara el efecto 9 (Silbato de árbitro 🗣️)
 
 ---
 

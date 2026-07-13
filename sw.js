@@ -6,7 +6,7 @@
 // Sube este número cuando cambies el contenido del propio SW para forzar
 // la limpieza de cachés antiguas. El contenido de la app (app.js, index.html)
 // se actualiza solo gracias a la estrategia network-first.
-const CACHE_VERSION = "samadry-v3";
+const CACHE_VERSION = "samadry-v4";
 const SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const AUDIO_CACHE = `${CACHE_VERSION}-audio`;
 

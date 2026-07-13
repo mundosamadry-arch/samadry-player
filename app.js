@@ -86,11 +86,11 @@ let recognitionRestartTimer = null;
 
 const VOICE_COMMANDS_STORAGE_KEY = "samadry_voice_commands";
 const VOICE_COMMAND_DEFINITIONS = [
-    { id: "next", label: "Siguiente canción", icon: "⏭️", mode: "direct", phrases: ["siguiente canción"] },
-    { id: "previous", label: "Canción anterior", icon: "⏮️", mode: "wake", phrases: ["anterior", "atrás"] },
-    { id: "pause", label: "Pausar música", icon: "⏸️", mode: "direct", phrases: ["stop"] },
-    { id: "resume", label: "Continuar música", icon: "▶️", mode: "direct", phrases: ["seguimos"] },
-    { id: "duck", label: "Bajar o recuperar volumen", icon: "🔉", mode: "wake", phrases: ["baja la música"] },
+    { id: "next", label: "Siguiente canción", icon: "⏭️", mode: "direct", phrases: ["siguiente canción", "siguiente", "salta"] },
+    { id: "previous", label: "Canción anterior", icon: "⏮️", mode: "direct", phrases: ["anterior", "atrás", "volver"] },
+    { id: "pause", label: "Pausar música", icon: "⏸️", mode: "direct", phrases: ["stop", "pausa", "para la música"] },
+    { id: "resume", label: "Continuar música", icon: "▶️", mode: "direct", phrases: ["seguimos", "continúa"] },
+    { id: "duck", label: "Bajar o recuperar volumen", icon: "🔉", mode: "direct", phrases: ["baja la música"] },
     { id: "playlist-juegos", label: "Empezar Juegos", icon: "🏃", mode: "direct", phrases: ["preparados listos", "empieza juegos"] },
     { id: "playlist-piratas", label: "Empezar Piratas", icon: "🏴‍☠️", mode: "direct", phrases: ["empieza piratas"] },
     { id: "playlist-exploradores", label: "Empezar Exploradores", icon: "🧭", mode: "direct", phrases: ["empieza exploradores"] },
@@ -99,15 +99,15 @@ const VOICE_COMMAND_DEFINITIONS = [
     { id: "playlist-spiderman", label: "Empezar Spiderman", icon: "🕷️", mode: "direct", phrases: ["empieza Spiderman"] },
     { id: "tarta", label: "Momento Tarta", icon: "🎂", mode: "direct", phrases: ["momento tarta"] },
     { id: "mundo", label: "Mundo Samadry", icon: "🌟", mode: "direct", phrases: ["momento mundo"] },
-    { id: "sfx-applause", label: "Sonido de aplausos", icon: "👏", mode: "wake", phrases: ["aplausos"] },
-    { id: "sfx-drumroll", label: "Sonido de redoble", icon: "🥁", mode: "wake", phrases: ["redoble"] },
-    { id: "sfx-magic", label: "Sonido de magia", icon: "🪄", mode: "wake", phrases: ["magia"] },
-    { id: "sfx-horn", label: "Sonido de bocina", icon: "🎺", mode: "wake", phrases: ["bocina"] },
-    { id: "sfx-laughs", label: "Sonido de risas", icon: "😆", mode: "wake", phrases: ["risas"] },
-    { id: "sfx-suspense", label: "Sonido de suspense", icon: "🕵️", mode: "wake", phrases: ["suspenso"] },
-    { id: "sfx-ding", label: "Sonido de acierto", icon: "🔔", mode: "wake", phrases: ["correcto"] },
-    { id: "sfx-error", label: "Sonido de fallo", icon: "💥", mode: "wake", phrases: ["fallo"] },
-    { id: "sfx-whistle", label: "Sonido de silbato", icon: "📣", mode: "wake", phrases: ["silbato"] }
+    { id: "sfx-applause", label: "Sonido de aplausos", icon: "👏", mode: "direct", phrases: ["aplausos"] },
+    { id: "sfx-drumroll", label: "Sonido de redoble", icon: "🥁", mode: "direct", phrases: ["redoble"] },
+    { id: "sfx-magic", label: "Sonido de magia", icon: "🪄", mode: "direct", phrases: ["magia"] },
+    { id: "sfx-horn", label: "Sonido de bocina", icon: "🎺", mode: "direct", phrases: ["bocina"] },
+    { id: "sfx-laughs", label: "Sonido de risas", icon: "😆", mode: "direct", phrases: ["risas"] },
+    { id: "sfx-suspense", label: "Sonido de suspense", icon: "🕵️", mode: "direct", phrases: ["suspenso"] },
+    { id: "sfx-ding", label: "Sonido de acierto", icon: "🔔", mode: "direct", phrases: ["correcto"] },
+    { id: "sfx-error", label: "Sonido de fallo", icon: "💥", mode: "direct", phrases: ["fallo"] },
+    { id: "sfx-whistle", label: "Sonido de silbato", icon: "📣", mode: "direct", phrases: ["silbato"] }
 ];
 
 function normalizeVoiceText(value) {
@@ -1360,7 +1360,7 @@ function renderStagePlaylists() {
 function updateVoiceStatus(message) {
     const status = document.getElementById("stage-voice-status");
     if (status) {
-        status.textContent = message || (voiceActive ? "Escuchando: di 'Samadry' y una orden" : "Micrófono apagado");
+        status.textContent = message || (voiceActive ? "Escuchando: di una orden" : "Micrófono apagado");
         status.classList.toggle("listening", voiceActive);
     }
     const stageButton = document.getElementById("stage-voice");
@@ -1398,7 +1398,7 @@ function closeStageMode() {
     if (document.fullscreenElement) { try { document.exitFullscreen(); } catch (e) {} }
 }
 
-// --- SPEECH RECOGNITION (VOICE ASSISTANT "OYE SAMADRY") ---
+// --- SPEECH RECOGNITION (DIRECT VOICE COMMANDS) ---
 
 function playPlaylistFromVoice(playlistKey) {
     if (!PLAYLISTS[playlistKey]?.length) {
@@ -1451,29 +1451,21 @@ function executeVoiceAction(actionId) {
 
 function runCustomVoiceCommand(transcript) {
     const normalizedTranscript = normalizeVoiceText(transcript);
-    const wakePosition = normalizedTranscript.lastIndexOf("samadry");
-    const afterWakeWord = wakePosition >= 0
-        ? normalizedTranscript.slice(wakePosition + "samadry".length).trim()
-        : "";
 
     for (const command of getCustomVoiceCommands()) {
         const definition = VOICE_COMMAND_DEFINITIONS.find((item) => item.id === command.actionId);
         if (!definition) continue;
         const phrase = normalizeVoiceText(command.phrase);
-        const spokenText = definition.mode === "wake" ? afterWakeWord : normalizedTranscript;
-        if (phrase && spokenText.includes(phrase)) {
-            if (definition.mode === "wake") temporarilyDuckForVoice();
+        if (phrase && normalizedTranscript.includes(phrase)) {
             return executeVoiceAction(command.actionId);
         }
     }
 
     for (const definition of VOICE_COMMAND_DEFINITIONS) {
-        const spokenText = definition.mode === "wake" ? afterWakeWord : normalizedTranscript;
         const matchesDefault = definition.phrases.some((phrase) =>
-            spokenText.includes(normalizeVoiceText(phrase))
+            normalizedTranscript.includes(normalizeVoiceText(phrase))
         );
         if (matchesDefault) {
-            if (definition.mode === "wake") temporarilyDuckForVoice();
             return executeVoiceAction(definition.id);
         }
     }
@@ -1503,8 +1495,8 @@ function renderVoiceCommands() {
         const title = document.createElement("strong");
         title.textContent = `${definition.icon} ${definition.label}`;
         const mode = document.createElement("span");
-        mode.className = `voice-command-mode ${definition.mode}`;
-        mode.textContent = definition.mode === "wake" ? "Di Samadry antes" : "Comando directo";
+        mode.className = "voice-command-mode direct";
+        mode.textContent = "Comando directo";
         heading.append(title, mode);
         card.appendChild(heading);
 
@@ -1572,7 +1564,7 @@ function initVoiceAssistant() {
         voiceBtn.className = "icon-btn voice-btn-active";
         voiceBtn.title = "Asistente de Voz Activo (Escuchando...)";
         updateVoiceStatus();
-        showToast("Asistente de Voz Activo: Di 'Oye Samadry' 🎙️");
+        showToast("Asistente de Voz Activo: di un comando 🎙️");
     };
     
     recognition.onend = () => {
@@ -1726,83 +1718,67 @@ function processVoiceCommand(transcript) {
         return;
     }
 
-    // Comandos que requieren activador "Samadry"
-    if (transcript.includes("samadry")) {
-        _lastCommandAt = now;
-        temporarilyDuckForVoice();
-        // Extraer el texto tras el activador
+    // Sinónimos y peticiones directas. "Samadry" sigue siendo opcional.
+    if (transcript) {
         let cleanText = transcript.replace(/.*samadry/, "").trim();
         
         // --- 1. Disparo de Sonidos (Soundboard) ---
         if (cleanText.includes("aplausos") || cleanText.includes("aplauso") || cleanText.includes("ovacion")) {
+            _lastCommandAt = now;
             triggerSFX("applause");
             showToast("Voz: Aplausos 👏");
             return;
         }
         if (cleanText.includes("redoble") || cleanText.includes("tambor") || cleanText.includes("tambores")) {
+            _lastCommandAt = now;
             triggerSFX("drumroll");
             showToast("Voz: Redoble 🥁");
             return;
         }
         if (cleanText.includes("magia") || cleanText.includes("magico") || cleanText.includes("varita")) {
+            _lastCommandAt = now;
             triggerSFX("magic");
             showToast("Voz: Mágico 🪄");
             return;
         }
         if (cleanText.includes("bocina") || cleanText.includes("trompeta")) {
+            _lastCommandAt = now;
             triggerSFX("horn");
             showToast("Voz: Bocina 🎺");
             return;
         }
         if (cleanText.includes("risas") || cleanText.includes("risa") || cleanText.includes("risitas")) {
+            _lastCommandAt = now;
             triggerSFX("laughs");
             showToast("Voz: Risas 😆");
             return;
         }
         if (cleanText.includes("suspenso") || cleanText.includes("misterio") || cleanText.includes("tension")) {
+            _lastCommandAt = now;
             triggerSFX("suspense");
             showToast("Voz: Suspenso 🕵️");
             return;
         }
         if (cleanText.includes("ding") || cleanText.includes("campana") || cleanText.includes("correcto")) {
+            _lastCommandAt = now;
             triggerSFX("ding");
             showToast("Voz: Ding! 🔔");
             return;
         }
         if (cleanText.includes("fallo") || cleanText.includes("error") || cleanText.includes("incorrecto")) {
+            _lastCommandAt = now;
             triggerSFX("error");
             showToast("Voz: Fallo 💥");
             return;
         }
-        if (cleanText.includes("silbato") || cleanText.includes("pito") || cleanText.includes("árbitro")) {
+        if (cleanText.includes("silbato") || cleanText.includes("pito") || cleanText.includes("arbitro")) {
+            _lastCommandAt = now;
             triggerSFX("whistle");
             showToast("Voz: Silbato 🗣️");
             return;
         }
         
-        // --- 2. Controles de Reproducción ---
-        if (cleanText.includes("pausa") || cleanText.includes("para") || cleanText.includes("parar") || cleanText.includes("pausar")) {
-            pauseCurrentTrack();
-            showToast("Voz: Música pausada ⏸️");
-            return;
-        }
-        if (cleanText.includes("reproduce") || cleanText.includes("continua") || cleanText.includes("play") || cleanText.includes("sonar")) {
-            playCurrentTrack();
-            showToast("Voz: Música iniciada ▶️");
-            return;
-        }
-        if (cleanText.includes("siguiente") || cleanText.includes("salta") || cleanText.includes("pasar")) {
-            playNext();
-            showToast("Voz: Siguiente canción ⏭️");
-            return;
-        }
-        if (cleanText.includes("anterior") || cleanText.includes("atras") || cleanText.includes("volver")) {
-            playPrev();
-            showToast("Voz: Canción anterior ⏮️");
-            return;
-        }
-        
-        // --- 3. Búsqueda y Reproducción de Música (Spotify / Local) ---
+        // --- 2. Búsqueda y Reproducción de Música (Spotify / Local) ---
         if (cleanText.includes("pon la cancion de") || cleanText.includes("busca la cancion de") || cleanText.includes("pon la musica de") || cleanText.startsWith("pon ") || cleanText.startsWith("reproduce ")) {
             let songQuery = cleanText
                 .replace(/pon la cancion de/, "")
@@ -1811,8 +1787,9 @@ function processVoiceCommand(transcript) {
                 .replace(/^pon\s+/, "")
                 .replace(/^reproduce\s+/, "")
                 .trim();
-            
+
             if (songQuery) {
+                _lastCommandAt = now;
                 showToast(`Buscando: "${songQuery}"`);
                 if (spotifyConnected) {
                     searchAndPlaySpotify(songQuery);
@@ -1820,6 +1797,32 @@ function processVoiceCommand(transcript) {
                     searchAndPlayLocal(songQuery);
                 }
             }
+            return;
+        }
+
+        // --- 3. Controles de Reproducción ---
+        if (cleanText === "pausa" || cleanText === "para" || cleanText.includes("para la musica") || cleanText.includes("parar musica") || cleanText.includes("pausar musica")) {
+            _lastCommandAt = now;
+            pauseCurrentTrack();
+            showToast("Voz: Música pausada ⏸️");
+            return;
+        }
+        if (cleanText.includes("reproduce") || cleanText.includes("continua") || cleanText.includes("play") || cleanText.includes("sonar")) {
+            _lastCommandAt = now;
+            playCurrentTrack();
+            showToast("Voz: Música iniciada ▶️");
+            return;
+        }
+        if (cleanText.includes("siguiente") || cleanText.includes("salta") || cleanText.includes("pasar")) {
+            _lastCommandAt = now;
+            playNext();
+            showToast("Voz: Siguiente canción ⏭️");
+            return;
+        }
+        if (cleanText.includes("anterior") || cleanText.includes("atras") || cleanText.includes("volver")) {
+            _lastCommandAt = now;
+            playPrev();
+            showToast("Voz: Canción anterior ⏮️");
             return;
         }
     }
