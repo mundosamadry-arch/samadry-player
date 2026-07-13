@@ -70,6 +70,8 @@
                 <button id="install-app-btn" class="icon-btn" title="Instalar como app" style="display:none">📲</button>
                 <button id="download-offline-btn" class="icon-btn" title="Descargar canciones para usar sin conexión">⬇️</button>
                 <button id="stage-mode-btn" class="icon-btn" title="Modo Escenario (botones grandes)">🎬</button>
+                <a class="icon-btn header-link" href="catalogo.html" title="Gestionar canciones">🗂️</a>
+                <span id="network-status" class="network-status" title="Estado de conexión">Online</span>
                 <button id="settings-btn" class="icon-btn" title="Ajustes de Spotify">⚙️</button>
                 <button id="fullscreen-btn" class="icon-btn" title="Pantalla Completa">📺</button>
             </div>
@@ -238,6 +240,11 @@
 
         <div class="stage-progress"><div id="stage-progress-fill" class="stage-progress-fill"></div></div>
 
+        <div id="stage-voice-status" class="stage-voice-status" aria-live="polite">Micrófono apagado</div>
+
+        <div class="stage-section-label">Elige una lista</div>
+        <div id="stage-playlists" class="stage-playlists"></div>
+
         <div class="stage-transport">
             <button id="stage-prev" class="stage-btn" title="Anterior">⏮️</button>
             <button id="stage-play" class="stage-btn play" title="Reproducir / Pausar">▶️</button>
@@ -246,6 +253,8 @@
         </div>
 
         <div class="stage-quick">
+            <button id="stage-voice" class="stage-btn stage-voice">🎙️ Escuchar</button>
+            <button id="stage-download" class="stage-btn">⬇️ Lista offline</button>
             <button id="stage-tarta" class="stage-btn">🎂 Tarta</button>
             <button id="stage-mundo" class="stage-btn">🌟 Mundo Samadry</button>
         </div>

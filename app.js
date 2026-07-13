@@ -80,6 +80,18 @@ let spotifyPlayerConnecting = false;
 // --- VOICE ASSISTANT (MICROPHONE) ---
 let recognition = null;
 let voiceActive = false;
+let voiceDuckActive = false;
+let voiceDuckTimer = null;
+let recognitionRestartTimer = null;
+
+const STAGE_PLAYLISTS = [
+    ["juegos", "🏃", "Juegos"],
+    ["piratas", "🏴‍☠️", "Piratas"],
+    ["exploradores", "🧭", "Exploradores"],
+    ["bluey", "💙", "Bluey"],
+    ["kpop", "🎤", "Kpop"],
+    ["spiderman", "🕷️", "Spiderman"]
+];
 
 function initAudioContext() {
     if (!audioCtx) {
@@ -1274,6 +1286,41 @@ function renderStageSoundboard() {
     });
 }
 
+function renderStagePlaylists() {
+    const grid = document.getElementById("stage-playlists");
+    if (!grid) return;
+    grid.innerHTML = "";
+    STAGE_PLAYLISTS.forEach(([key, emoji, label]) => {
+        const button = document.createElement("button");
+        const count = PLAYLISTS[key]?.length || 0;
+        button.className = `stage-playlist ${currentPlaylistKey === key ? "active" : ""}`;
+        button.disabled = count === 0;
+        button.innerHTML = `<span>${emoji}</span><strong>${label}</strong><small>${count} ${count === 1 ? "canción" : "canciones"}</small>`;
+        button.addEventListener("click", async () => {
+            switchPlaylistTab(`tab-${key}`);
+            renderStagePlaylists();
+            if (PLAYLISTS[key]?.length) {
+                loadTrack(key, 0);
+                await playCurrentTrack();
+            }
+        });
+        grid.appendChild(button);
+    });
+}
+
+function updateVoiceStatus(message) {
+    const status = document.getElementById("stage-voice-status");
+    if (status) {
+        status.textContent = message || (voiceActive ? "Escuchando: di 'Samadry' y una orden" : "Micrófono apagado");
+        status.classList.toggle("listening", voiceActive);
+    }
+    const stageButton = document.getElementById("stage-voice");
+    if (stageButton) {
+        stageButton.classList.toggle("active-voice", voiceActive);
+        stageButton.textContent = voiceActive ? "🎙️ Escuchando" : "🎙️ Escuchar";
+    }
+}
+
 function syncStageInfo() {
     const t = document.getElementById("stage-track-title");
     const s = document.getElementById("stage-track-sub");
@@ -1285,7 +1332,9 @@ function openStageMode() {
     const el = document.getElementById("stage-mode");
     if (!el) return;
     renderStageSoundboard();
+    renderStagePlaylists();
     syncStageInfo();
+    updateVoiceStatus();
     const pb = document.getElementById("stage-play");
     if (pb) pb.textContent = nativePlayer.paused ? "▶️" : "⏸️";
     const db = document.getElementById("stage-duck");
@@ -1312,33 +1361,38 @@ function initVoiceAssistant() {
     recognition = new SpeechRecognition();
     recognition.continuous = true;
     recognition.lang = 'es-ES';
-    recognition.interimResults = true;  // Procesar texto mientras se habla
+    recognition.interimResults = false;
 
     recognition.onstart = () => {
         voiceActive = true;
         const voiceBtn = document.getElementById("voice-assistant-btn");
         voiceBtn.className = "icon-btn voice-btn-active";
         voiceBtn.title = "Asistente de Voz Activo (Escuchando...)";
+        updateVoiceStatus();
         showToast("Asistente de Voz Activo: Di 'Oye Samadry' 🎙️");
     };
     
     recognition.onend = () => {
         const voiceBtn = document.getElementById("voice-assistant-btn");
         if (voiceActive) {
-            // Reiniciar automáticamente si se detiene por inactividad
-            try {
-                recognition.start();
-            } catch(e) {}
+            clearTimeout(recognitionRestartTimer);
+            recognitionRestartTimer = setTimeout(() => {
+                if (!voiceActive) return;
+                try { recognition.start(); } catch(e) {}
+            }, 350);
         } else {
             voiceBtn.className = "icon-btn voice-btn-inactive";
             voiceBtn.title = "Activar Asistente de Voz";
         }
+        updateVoiceStatus();
     };
     
     recognition.onresult = (event) => {
         for (let i = event.resultIndex; i < event.results.length; i++) {
+            if (!event.results[i].isFinal) continue;
             const transcript = event.results[i][0].transcript.trim().toLowerCase();
-            console.log("Voz:", transcript, event.results[i].isFinal ? "(final)" : "(interim)");
+            console.log("Voz:", transcript, "(final)");
+            updateVoiceStatus(`He oído: “${transcript}”`);
             processVoiceCommand(transcript);
         }
     };
@@ -1348,6 +1402,10 @@ function initVoiceAssistant() {
         if (e.error === 'not-allowed') {
             alert("Acceso al micrófono denegado. Activa los permisos en el navegador.");
             toggleVoiceAssistant(false);
+        } else if (e.error === "no-speech") {
+            updateVoiceStatus("No te he oído. Sigue activo.");
+        } else if (e.error === "audio-capture") {
+            updateVoiceStatus("No se encuentra el micrófono");
         }
     };
 }
@@ -1380,6 +1438,7 @@ function toggleVoiceAssistant(forceState) {
         voiceBtn.className = "icon-btn voice-btn-inactive";
         voiceBtn.title = "Activar Asistente de Voz";
         showToast("Asistente de Voz Desactivado 🤐");
+        updateVoiceStatus();
     }
 }
 
@@ -1452,6 +1511,8 @@ function processVoiceCommand(transcript) {
 
     // Comandos que requieren activador "Samadry"
     if (transcript.includes("samadry")) {
+        _lastCommandAt = now;
+        temporarilyDuckForVoice();
         // Extraer el texto tras el activador
         let cleanText = transcript.replace(/.*samadry/, "").trim();
         
@@ -1547,6 +1608,26 @@ function processVoiceCommand(transcript) {
     }
 }
 
+function temporarilyDuckForVoice() {
+    if (isDucked) return;
+    voiceDuckActive = true;
+    clearTimeout(voiceDuckTimer);
+    applyTargetVolume(180);
+    voiceDuckTimer = setTimeout(() => {
+        voiceDuckActive = false;
+        applyTargetVolume(500);
+    }, 2200);
+}
+
+function applyTargetVolume(duration = 300) {
+    const target = getTargetVolume();
+    if (isSpotifyPlaybackActive()) {
+        spotifyPlayer.setVolume(target).catch(() => {});
+    } else if (!nativePlayer.paused) {
+        fadeVolume(nativePlayer, nativePlayer.volume, target, duration);
+    }
+}
+
 function startGamesMusicNow() {
     switchPlaylistTab("tab-juegos");
     loadTrack("juegos", 0);
@@ -1611,6 +1692,7 @@ function showToast(msg) {
     toast.style.transition = "opacity 0.3s";
     
     document.body.appendChild(toast);
+    if (msg.startsWith("Voz:")) updateVoiceStatus(msg);
     setTimeout(() => toast.style.opacity = "1", 10);
     
     setTimeout(() => {
@@ -2022,7 +2104,7 @@ function fadeVolume(el, from, to, ms, done) {
 // Volumen objetivo según el slider maestro y si está "bajado para hablar"
 function getTargetVolume() {
     const base = parseFloat(document.getElementById("master-volume-slider").value);
-    return isDucked ? base * 0.15 : base;
+    return (isDucked || voiceDuckActive) ? base * 0.15 : base;
 }
 
 // Crossfade: la pista actual se desvanece en un elemento secundario mientras
@@ -2078,11 +2160,7 @@ function toggleDuck() {
     const stageBtn = document.getElementById("stage-duck");
     if (stageBtn) stageBtn.classList.toggle("active-duck", isDucked);
 
-    if (isSpotifyPlaybackActive()) {
-        spotifyPlayer.setVolume(getTargetVolume());
-    } else if (!nativePlayer.paused) {
-        fadeVolume(nativePlayer, nativePlayer.volume, getTargetVolume(), 500);
-    }
+    applyTargetVolume(500);
     showToast(isDucked ? "🔉 Música bajada para hablar" : "🔊 Música restaurada");
 }
 
@@ -2624,6 +2702,7 @@ function switchPlaylistTab(tabId) {
     });
     
     const activeTab = document.getElementById(tabId);
+    if (!activeTab) return;
     activeTab.classList.add("active");
     activeTab.setAttribute("aria-selected", "true");
     
@@ -2654,6 +2733,7 @@ function switchPlaylistTab(tabId) {
     const thematicSounds = THEMATIC_SOUNDS[key];
     const themeLabel = SOUNDBOARD_THEME_LABELS[key] || "🎉 Genérico";
     renderSoundboard(thematicSounds || GENERIC_SOUNDS, themeLabel);
+    renderStagePlaylists();
 }
 
 function getPlaylistLabel(key) {
@@ -3177,6 +3257,7 @@ document.getElementById("stage-prev")?.addEventListener("click", playPrev);
 document.getElementById("stage-next")?.addEventListener("click", playNext);
 document.getElementById("stage-play")?.addEventListener("click", togglePlay);
 document.getElementById("stage-duck")?.addEventListener("click", toggleDuck);
+document.getElementById("stage-voice")?.addEventListener("click", () => toggleVoiceAssistant());
 document.getElementById("stage-tarta")?.addEventListener("click", async () => {
     loadTrack("tarta", 0);
     await playCurrentTrack();
@@ -3409,7 +3490,11 @@ if ("serviceWorker" in navigator) {
                 btn.textContent = "✅";
                 setTimeout(() => { btn.textContent = "⬇️"; }, 3000);
             }
-            showToast(`✅ ${data.total} pista(s) disponibles sin conexión`);
+            const failed = data.failed || 0;
+            showToast(failed
+                ? `Descarga terminada: ${data.total - failed} guardadas y ${failed} con error`
+                : `✅ ${data.total} pista(s) disponibles sin conexión`);
+            updateOfflineStatus();
         }
     });
 }
@@ -3469,21 +3554,46 @@ function collectAllAudioUrls() {
     return [...urls];
 }
 
-function downloadForOffline() {
+function collectPlaylistAudioUrls(key) {
+    return (PLAYLISTS[key] || [])
+        .filter((track) => track.url && !track.fileObject)
+        .map((track) => track.url);
+}
+
+async function updateOfflineStatus() {
+    const badge = document.getElementById("network-status");
+    if (!badge) return;
+    badge.textContent = navigator.onLine ? "Online" : "Sin conexión";
+    badge.classList.toggle("offline", !navigator.onLine);
+}
+
+function requestOfflineDownload(urls, label) {
     if (!("serviceWorker" in navigator) || !navigator.serviceWorker.controller) {
         showToast("Recarga la página una vez para activar el modo offline.");
         return;
     }
-    const urls = collectAllAudioUrls();
     if (urls.length === 0) {
-        showToast("Aún no hay canciones que descargar.");
+        showToast("Esta lista todavía no tiene canciones.");
         return;
     }
-    showToast(`⬇️ Descargando ${urls.length} pista(s) para usar sin conexión...`);
+    showToast(`Descargando ${label}: ${urls.length} pista(s)...`);
     navigator.serviceWorker.controller.postMessage({ type: "PRECACHE_AUDIO", urls });
 }
 
+function downloadForOffline() {
+    const urls = collectAllAudioUrls();
+    requestOfflineDownload(urls, "toda la música");
+}
+
+function downloadCurrentPlaylistForOffline() {
+    requestOfflineDownload(collectPlaylistAudioUrls(currentPlaylistKey), getPlaylistLabel(currentPlaylistKey));
+}
+
 document.getElementById("download-offline-btn")?.addEventListener("click", downloadForOffline);
+document.getElementById("stage-download")?.addEventListener("click", downloadCurrentPlaylistForOffline);
+window.addEventListener("online", updateOfflineStatus);
+window.addEventListener("offline", updateOfflineStatus);
+updateOfflineStatus();
 
 // --- Prompt de instalación de la PWA ---
 let deferredInstallPrompt = null;

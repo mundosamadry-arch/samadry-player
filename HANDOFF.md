@@ -1,6 +1,16 @@
 # Samadry Player - Estado del proyecto y traspaso
 
-Fecha del traspaso: 2026-05-26
+Ultima actualizacion: 2026-07-12
+
+## Estado actual resumido
+
+- GitHub Pages ya funciona en `https://mundosamadry-arch.github.io/`.
+- La musica compartida se sirve desde `https://animacionesinfantilesmusicales.com/player/samadry-audio/`.
+- Hay seis listas de hosting: Juegos, Piratas, Exploradores, Bluey, Kpop y Spiderman.
+- `catalogo.html` permite generar `playlists.json` sin escribir JSON manualmente.
+- El Modo Escenario permite elegir lista, reproducir, bajar volumen, activar voz, descargar una lista offline y lanzar efectos.
+- La voz procesa solo frases terminadas, evita ordenes duplicadas y baja temporalmente la musica al reconocer "Samadry".
+- Spotify sigue siendo opcional y requiere una cuenta Premium por animador.
 
 Este documento resume que se ha hecho, donde esta cada cosa y que problemas quedan abiertos para que otro programador pueda continuar el proyecto.
 
@@ -167,7 +177,9 @@ http://127.0.0.1:8080/
 
 ## Problemas abiertos
 
-### Problema A: GitHub Pages sigue dando 404
+### Problema A: GitHub Pages (resuelto)
+
+El sitio raiz ya publica correctamente. La informacion historica siguiente se conserva para explicar los intentos anteriores.
 
 URLs probadas:
 

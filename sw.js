@@ -6,7 +6,7 @@
 // Sube este número cuando cambies el contenido del propio SW para forzar
 // la limpieza de cachés antiguas. El contenido de la app (app.js, index.html)
 // se actualiza solo gracias a la estrategia network-first.
-const CACHE_VERSION = "samadry-v1";
+const CACHE_VERSION = "samadry-v2";
 const SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const AUDIO_CACHE = `${CACHE_VERSION}-audio`;
 
@@ -16,6 +16,7 @@ const SHELL_ASSETS = [
     "./index.html",
     "./app.js",
     "./index.css",
+    "./catalogo.html",
     "./manifest.json",
     "./icon.svg"
 ];
@@ -114,6 +115,7 @@ self.addEventListener("message", (event) => {
             const cache = await caches.open(AUDIO_CACHE);
             const total = data.urls.length;
             let done = 0;
+            let failed = 0;
 
             for (const u of data.urls) {
                 try {
@@ -121,9 +123,10 @@ self.addEventListener("message", (event) => {
                     if (!existing) {
                         const res = await fetch(u);
                         if (res.ok) await cache.put(u, res.clone());
+                        else failed++;
                     }
                 } catch (e) {
-                    // Continuar con el resto aunque una pista falle
+                    failed++;
                 }
                 done++;
                 const clients = await self.clients.matchAll();
@@ -131,7 +134,7 @@ self.addEventListener("message", (event) => {
             }
 
             const clients = await self.clients.matchAll();
-            clients.forEach((c) => c.postMessage({ type: "PRECACHE_DONE", total }));
+            clients.forEach((c) => c.postMessage({ type: "PRECACHE_DONE", total, failed }));
         })());
     }
 

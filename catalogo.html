@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionar canciones - Samadry Player</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body class="catalog-page">
+    <main class="catalog-shell">
+        <header class="catalog-header">
+            <div>
+                <h1>Gestionar canciones</h1>
+                <p>Crea el catálogo que leerán todos los reproductores.</p>
+            </div>
+            <a class="btn btn-secondary" href="index.html">Volver al reproductor</a>
+        </header>
+
+        <section class="catalog-settings">
+            <label for="catalog-base-url">Dirección de la carpeta de audio</label>
+            <input id="catalog-base-url" class="custom-input" value="https://animacionesinfantilesmusicales.com/player/samadry-audio/">
+        </section>
+
+        <div id="catalog-lists" class="catalog-lists"></div>
+
+        <div class="catalog-actions">
+            <button id="validate-catalog" class="btn btn-secondary">Comprobar enlaces</button>
+            <button id="download-catalog" class="btn btn-primary">Descargar playlists.json</button>
+        </div>
+        <div id="catalog-result" class="catalog-result" aria-live="polite"></div>
+    </main>
+
+    <script>
+        const lists = [
+            ["juegos", "Juegos Genérica", "juegos-generica"],
+            ["piratas", "Piratas", "piratas"],
+            ["exploradores", "Exploradores", "exploradores"],
+            ["bluey", "Bluey", "bluey"],
+            ["kpop", "Kpop", "kpop"],
+            ["spiderman", "Spiderman", "spiderman"]
+        ];
+        const container = document.getElementById("catalog-lists");
+        const result = document.getElementById("catalog-result");
+
+        lists.forEach(([key, label, folder]) => {
+            const section = document.createElement("section");
+            section.className = "catalog-list";
+            section.innerHTML = `
+                <h2>${label}</h2>
+                <p>Carpeta: <strong>${folder}/</strong></p>
+                <textarea data-key="${key}" data-folder="${folder}" placeholder="Una canción por línea, por ejemplo:\n01-cancion.mp3\n02-otra-cancion.mp3"></textarea>`;
+            container.appendChild(section);
+        });
+
+        function cleanTitle(file) {
+            return file.split("/").pop().replace(/\.[^.]+$/, "").replace(/^\d+[\s_-]*/, "").replace(/[_-]+/g, " ").trim();
+        }
+
+        function buildCatalog() {
+            const catalog = {};
+            document.querySelectorAll("[data-key]").forEach((field) => {
+                catalog[field.dataset.key] = field.value.split("\n")
+                    .map((name) => name.trim())
+                    .filter(Boolean)
+                    .map((name) => ({
+                        title: cleanTitle(name),
+                        artist: "Mundo Samadry",
+                        file: `${field.dataset.folder}/${name}`
+                    }));
+            });
+            return catalog;
+        }
+
+        document.getElementById("download-catalog").addEventListener("click", () => {
+            const blob = new Blob([JSON.stringify(buildCatalog(), null, 2)], { type: "application/json" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "playlists.json";
+            link.click();
+            URL.revokeObjectURL(link.href);
+            result.textContent = "Catálogo creado. Súbelo a la carpeta samadry-audio sustituyendo el anterior.";
+        });
+
+        document.getElementById("validate-catalog").addEventListener("click", async () => {
+            const base = document.getElementById("catalog-base-url").value.replace(/\/?$/, "/");
+            const tracks = Object.values(buildCatalog()).flat();
+            if (!tracks.length) {
+                result.textContent = "Añade al menos un nombre de archivo para comprobarlo.";
+                return;
+            }
+            result.textContent = `Comprobando ${tracks.length} enlaces...`;
+            let failed = 0;
+            for (const track of tracks) {
+                try {
+                    const response = await fetch(new URL(track.file, base), { method: "HEAD", cache: "no-store" });
+                    if (!response.ok) failed++;
+                } catch (error) {
+                    failed++;
+                }
+            }
+            result.textContent = failed ? `${failed} enlace(s) no responden. Revisa nombres y carpetas.` : "Todos los enlaces responden correctamente.";
+        });
+    </script>
+</body>
+</html>
