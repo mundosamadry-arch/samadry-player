@@ -8,10 +8,10 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
     <!-- PWA: instalable y offline -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#9d4edd">
+    <meta name="theme-color" content="#ffffff">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -31,50 +31,56 @@
         <!-- HEADER -->
         <header class="app-header">
             <div class="header-logo">
-                <span class="logo-icon">🎵</span>
-                <h1>Samadry<span class="highlight">Player</span></h1>
+                <img class="logo-mark" src="icon.svg" alt="">
+                <div class="brand-copy">
+                    <h1>Samadry <span class="highlight">Player</span></h1>
+                    <span class="brand-kicker">Panel de animación</span>
+                </div>
             </div>
             
             <div class="header-controls">
-                <!-- Asistente de Voz -->
-                <button id="voice-assistant-btn" class="icon-btn voice-btn-inactive" title="Activar Asistente de Voz">🎙️</button>
-                <button id="voice-commands-btn" class="icon-btn" title="Ver y personalizar comandos de voz">📋</button>
+                <div class="show-settings">
+                    <!-- Selector de Duración del Show -->
+                    <div class="control-group">
+                        <label for="show-duration-select">Duración</label>
+                        <select id="show-duration-select" class="custom-select">
+                            <option value="60">1 Hora (60 min)</option>
+                            <option value="90" selected>1.5 Horas (90 min)</option>
+                            <option value="120">2 Horas (120 min)</option>
+                        </select>
+                    </div>
 
-                <!-- Selector de Duración del Show -->
-                <div class="control-group">
-                    <label for="show-duration-select">Duración del Show:</label>
-                    <select id="show-duration-select" class="custom-select">
-                        <option value="60">1 Hora (60 min)</option>
-                        <option value="90" selected>1.5 Horas (90 min)</option>
-                        <option value="120">2 Horas (120 min)</option>
-                    </select>
+                    <!-- Selector de Crossfade -->
+                    <div class="control-group">
+                        <label for="crossfade-select">Fundido</label>
+                        <select id="crossfade-select" class="custom-select">
+                            <option value="0">Off</option>
+                            <option value="2">2s</option>
+                            <option value="3" selected>3s</option>
+                            <option value="5">5s</option>
+                        </select>
+                    </div>
+
+                    <!-- Master Volume -->
+                    <div class="control-group master-volume-container">
+                        <span class="volume-icon">🔊</span>
+                        <input type="range" id="master-volume-slider" min="0" max="1" step="0.05" value="0.8" class="custom-slider" aria-label="Volumen general">
+                        <span id="master-volume-text">80%</span>
+                    </div>
                 </div>
 
-                <!-- Selector de Crossfade -->
-                <div class="control-group">
-                    <label for="crossfade-select">Crossfade:</label>
-                    <select id="crossfade-select" class="custom-select">
-                        <option value="0">Off</option>
-                        <option value="2">2s</option>
-                        <option value="3" selected>3s</option>
-                        <option value="5">5s</option>
-                    </select>
+                <div class="header-actions">
+                    <!-- Asistente de Voz -->
+                    <button id="voice-assistant-btn" class="icon-btn voice-btn-inactive" title="Activar Asistente de Voz">🎙️</button>
+                    <button id="voice-commands-btn" class="icon-btn" title="Ver y personalizar comandos de voz">📋</button>
+                    <button id="install-app-btn" class="icon-btn" title="Instalar como app" style="display:none">📲</button>
+                    <button id="download-offline-btn" class="icon-btn" title="Descargar canciones para usar sin conexión">⬇️</button>
+                    <button id="stage-mode-btn" class="icon-btn stage-launch" title="Modo Escenario (botones grandes)">🎬</button>
+                    <a class="icon-btn header-link" href="catalogo.html" title="Gestionar canciones">🗂️</a>
+                    <span id="network-status" class="network-status" title="Estado de conexión">Online</span>
+                    <button id="settings-btn" class="icon-btn" title="Ajustes de Spotify">⚙️</button>
+                    <button id="fullscreen-btn" class="icon-btn" title="Pantalla Completa">⛶</button>
                 </div>
-
-                <!-- Master Volume -->
-                <div class="control-group master-volume-container">
-                    <span class="volume-icon">🔊</span>
-                    <input type="range" id="master-volume-slider" min="0" max="1" step="0.05" value="0.8" class="custom-slider">
-                    <span id="master-volume-text">80%</span>
-                </div>
-
-                <button id="install-app-btn" class="icon-btn" title="Instalar como app" style="display:none">📲</button>
-                <button id="download-offline-btn" class="icon-btn" title="Descargar canciones para usar sin conexión">⬇️</button>
-                <button id="stage-mode-btn" class="icon-btn" title="Modo Escenario (botones grandes)">🎬</button>
-                <a class="icon-btn header-link" href="catalogo.html" title="Gestionar canciones">🗂️</a>
-                <span id="network-status" class="network-status" title="Estado de conexión">Online</span>
-                <button id="settings-btn" class="icon-btn" title="Ajustes de Spotify">⚙️</button>
-                <button id="fullscreen-btn" class="icon-btn" title="Pantalla Completa">📺</button>
             </div>
         </header>
 
@@ -215,10 +221,14 @@
 
             <form id="add-voice-command-form" class="voice-command-form">
                 <h3>Añadir una frase nueva</h3>
-                <label for="new-voice-phrase">Cuando diga</label>
-                <input id="new-voice-phrase" class="custom-input" type="text" maxlength="80" placeholder="Por ejemplo: vamos con la siguiente" required>
-                <label for="new-voice-action">La app hará</label>
-                <select id="new-voice-action" class="custom-select"></select>
+                <div class="voice-command-field">
+                    <label for="new-voice-phrase">Cuando diga</label>
+                    <input id="new-voice-phrase" class="custom-input" type="text" maxlength="80" placeholder="Por ejemplo: vamos con la siguiente" required>
+                </div>
+                <div class="voice-command-field">
+                    <label for="new-voice-action">La app hará</label>
+                    <select id="new-voice-action" class="custom-select"></select>
+                </div>
                 <button type="submit" class="btn btn-success">＋ Añadir comando</button>
             </form>
         </div>

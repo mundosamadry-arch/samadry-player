@@ -12,6 +12,7 @@ Ultima actualizacion: 2026-07-13
 - La voz procesa solo frases terminadas y evita ordenes duplicadas. Todos los comandos son directos; decir "Samadry" es opcional.
 - La app incluye un listado visible de comandos de voz. El animador puede añadir frases alternativas y eliminarlas; se guardan en `localStorage` con la clave `samadry_voice_commands`.
 - Hay comandos directos para iniciar cualquiera de las seis listas del hosting.
+- La interfaz usa el sistema visual claro de Samadry: superficies blancas, texto azul tinta y acentos violeta, turquesa, rosa y amarillo. El Modo Escenario conserva fondo oscuro de alto contraste.
 - Spotify sigue siendo opcional y requiere una cuenta Premium por animador.
 
 Este documento resume que se ha hecho, donde esta cada cosa y que problemas quedan abiertos para que otro programador pueda continuar el proyecto.

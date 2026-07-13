@@ -3887,41 +3887,41 @@ window.addEventListener("appinstalled", () => {
 document.head.insertAdjacentHTML('beforeend', `<style>
 .song-number{font-size:.7rem;font-weight:700;color:var(--text-secondary);min-width:22px;margin-right:6px;font-variant-numeric:tabular-nums;opacity:.6}
 .song-item.active .song-number{color:var(--neon-cyan);opacity:1}
-.soundboard-theme-badge{display:inline-block;font-size:.62rem;font-weight:600;padding:2px 8px;border-radius:20px;background:rgba(157,78,221,.18);border:1px solid rgba(157,78,221,.4);color:#c77dff;letter-spacing:.03em;vertical-align:middle;margin-left:6px;transition:background .3s,color .3s}
+.soundboard-theme-badge{display:inline-block;font-size:.62rem;font-weight:700;padding:2px 8px;border-radius:4px;background:#f1effb;border:1px solid #d5cff3;color:#5946ac;letter-spacing:0;vertical-align:middle;margin-left:6px;transition:background .3s,color .3s}
 /* Buscador y favoritos */
-.song-search-bar{display:flex;gap:8px;margin-bottom:10px}
-#song-search{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;color:#fff;padding:9px 12px;font-size:.9rem;outline:none}
-#song-search::placeholder{color:#9aa6c0}
-#song-search:focus{border-color:#9d4edd}
-#fav-toggle-btn{flex:none;width:46px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#f7b500;font-size:1.15rem;cursor:pointer;transition:background .2s,border-color .2s}
-#fav-toggle-btn.active{background:rgba(247,181,0,.2);border-color:rgba(247,181,0,.5)}
+.song-search-bar{display:flex;gap:8px;padding:10px 10px 0;margin-bottom:10px;background:#fff}
+#song-search{flex:1;min-width:0;background:#f8fafc;border:1px solid #d8e0ec;border-radius:6px;color:#172033;padding:9px 12px;font:500 .82rem var(--font-primary);outline:none}
+#song-search::placeholder{color:#7b879a}
+#song-search:focus{border-color:#18aebd;box-shadow:0 0 0 3px rgba(24,174,189,.12)}
+#fav-toggle-btn{flex:none;width:42px;border-radius:6px;border:1px solid #d8e0ec;background:#fff;color:#d99a0f;font-size:1.05rem;cursor:pointer;transition:background .2s,border-color .2s}
+#fav-toggle-btn.active{background:#fff6dc;border-color:#e8c55f}
 .song-fav{flex:none;background:none;border:none;cursor:pointer;font-size:1.1rem;color:#f7b500;padding:4px 6px;line-height:1;opacity:.9}
 .song-fav.is-fav{filter:drop-shadow(0 0 4px rgba(247,181,0,.55))}
 </style>`);
 
 // Estilos del Modo Escenario (botones gigantes para usar en directo)
 document.head.insertAdjacentHTML('beforeend', `<style>
-#stage-mode{position:fixed;inset:0;z-index:100000;background:radial-gradient(circle at 50% 0%,#16121f,#09090e 70%);display:flex;flex-direction:column;padding:14px;gap:12px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#stage-mode{position:fixed;inset:0;z-index:100000;background:#111827;display:flex;flex-direction:column;padding:16px;gap:12px;overflow-y:auto;-webkit-overflow-scrolling:touch}
 #stage-mode.hidden{display:none}
 .stage-top{display:flex;align-items:center;gap:12px;padding-top:8px}
 .stage-track{flex:1;min-width:0}
 .stage-track-title{font-size:1.6rem;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.1}
 .stage-track-sub{font-size:.9rem;color:#9aa6c0;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
-.stage-exit{flex:none;width:56px;height:56px;border-radius:16px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#fff;font-size:1.5rem;cursor:pointer}
+.stage-exit{flex:none;width:54px;height:54px;border-radius:8px;border:1px solid #3b475b;background:#1d2738;color:#fff;font-size:1.4rem;cursor:pointer}
 .stage-exit:active{transform:scale(.93)}
 .stage-progress{height:10px;border-radius:8px;background:rgba(255,255,255,.1);overflow:hidden}
-.stage-progress-fill{height:100%;width:0;background:linear-gradient(90deg,#7b2ff7,#23d5e8);transition:width .2s linear}
+.stage-progress-fill{height:100%;width:0;background:linear-gradient(90deg,#18aebd,#8a6bea);transition:width .2s linear}
 .stage-transport{display:flex;gap:12px}
-.stage-btn{flex:1;min-height:88px;border-radius:20px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#fff;font-size:2rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .08s,background .2s}
+.stage-btn{flex:1;min-height:88px;border-radius:8px;border:1px solid #3b475b;background:#1d2738;color:#fff;font-size:2rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .08s,background .2s}
 .stage-btn:active{transform:scale(.95)}
-.stage-btn.play{flex:1.7;font-size:2.8rem;background:linear-gradient(135deg,#7b2ff7,#23d5e8);border:none}
-.stage-btn.duck.active-duck{background:linear-gradient(135deg,#f7b500,#ff7a00);color:#1a1200}
+.stage-btn.play{flex:1.7;font-size:2.8rem;background:#6d55d9;border-color:#8c78e5}
+.stage-btn.duck.active-duck{background:#f2b93b;border-color:#f2b93b;color:#1a1200}
 .stage-quick{display:flex;gap:12px}
 .stage-quick .stage-btn{min-height:66px;font-size:1.15rem;font-weight:700}
 .stage-section-label{font-size:.72rem;color:#9aa6c0;text-transform:uppercase;letter-spacing:.09em;margin:2px 0 -2px;opacity:.75}
 .stage-sounds{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding-bottom:8px}
-.stage-pad{min-height:90px;border-radius:18px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;transition:transform .08s,background .15s}
-.stage-pad:active,.stage-pad.triggered{transform:scale(.92);background:rgba(123,47,247,.4)}
+.stage-pad{min-height:90px;border-radius:8px;border:1px solid #3b475b;background:#1d2738;color:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;transition:transform .08s,background .15s}
+.stage-pad:active,.stage-pad.triggered{transform:scale(.92);background:#5641b6}
 .stage-pad .e{font-size:2rem;line-height:1}
 .stage-pad .n{font-size:.78rem;font-weight:700;text-align:center;padding:0 4px}
 @media(min-width:700px){.stage-track-title{font-size:2.1rem}.stage-sounds{grid-template-columns:repeat(4,1fr)}}
