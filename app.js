@@ -84,6 +84,55 @@ let voiceDuckActive = false;
 let voiceDuckTimer = null;
 let recognitionRestartTimer = null;
 
+const VOICE_COMMANDS_STORAGE_KEY = "samadry_voice_commands";
+const VOICE_COMMAND_DEFINITIONS = [
+    { id: "next", label: "Siguiente canción", icon: "⏭️", mode: "direct", phrases: ["siguiente canción"] },
+    { id: "previous", label: "Canción anterior", icon: "⏮️", mode: "wake", phrases: ["anterior", "atrás"] },
+    { id: "pause", label: "Pausar música", icon: "⏸️", mode: "direct", phrases: ["stop"] },
+    { id: "resume", label: "Continuar música", icon: "▶️", mode: "direct", phrases: ["seguimos"] },
+    { id: "duck", label: "Bajar o recuperar volumen", icon: "🔉", mode: "wake", phrases: ["baja la música"] },
+    { id: "playlist-juegos", label: "Empezar Juegos", icon: "🏃", mode: "direct", phrases: ["preparados listos", "empieza juegos"] },
+    { id: "playlist-piratas", label: "Empezar Piratas", icon: "🏴‍☠️", mode: "direct", phrases: ["empieza piratas"] },
+    { id: "playlist-exploradores", label: "Empezar Exploradores", icon: "🧭", mode: "direct", phrases: ["empieza exploradores"] },
+    { id: "playlist-bluey", label: "Empezar Bluey", icon: "💙", mode: "direct", phrases: ["empieza Bluey"] },
+    { id: "playlist-kpop", label: "Empezar Kpop", icon: "🎤", mode: "direct", phrases: ["empieza Kpop"] },
+    { id: "playlist-spiderman", label: "Empezar Spiderman", icon: "🕷️", mode: "direct", phrases: ["empieza Spiderman"] },
+    { id: "tarta", label: "Momento Tarta", icon: "🎂", mode: "direct", phrases: ["momento tarta"] },
+    { id: "mundo", label: "Mundo Samadry", icon: "🌟", mode: "direct", phrases: ["momento mundo"] },
+    { id: "sfx-applause", label: "Sonido de aplausos", icon: "👏", mode: "wake", phrases: ["aplausos"] },
+    { id: "sfx-drumroll", label: "Sonido de redoble", icon: "🥁", mode: "wake", phrases: ["redoble"] },
+    { id: "sfx-magic", label: "Sonido de magia", icon: "🪄", mode: "wake", phrases: ["magia"] },
+    { id: "sfx-horn", label: "Sonido de bocina", icon: "🎺", mode: "wake", phrases: ["bocina"] },
+    { id: "sfx-laughs", label: "Sonido de risas", icon: "😆", mode: "wake", phrases: ["risas"] },
+    { id: "sfx-suspense", label: "Sonido de suspense", icon: "🕵️", mode: "wake", phrases: ["suspenso"] },
+    { id: "sfx-ding", label: "Sonido de acierto", icon: "🔔", mode: "wake", phrases: ["correcto"] },
+    { id: "sfx-error", label: "Sonido de fallo", icon: "💥", mode: "wake", phrases: ["fallo"] },
+    { id: "sfx-whistle", label: "Sonido de silbato", icon: "📣", mode: "wake", phrases: ["silbato"] }
+];
+
+function normalizeVoiceText(value) {
+    return String(value || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9ñ\s]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+function getCustomVoiceCommands() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(VOICE_COMMANDS_STORAGE_KEY) || "[]");
+        return Array.isArray(saved) ? saved.filter((item) => item && item.phrase && item.actionId) : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function saveCustomVoiceCommands(commands) {
+    localStorage.setItem(VOICE_COMMANDS_STORAGE_KEY, JSON.stringify(commands));
+}
+
 const STAGE_PLAYLISTS = [
     ["juegos", "🏃", "Juegos"],
     ["piratas", "🏴‍☠️", "Piratas"],
@@ -1351,6 +1400,160 @@ function closeStageMode() {
 
 // --- SPEECH RECOGNITION (VOICE ASSISTANT "OYE SAMADRY") ---
 
+function playPlaylistFromVoice(playlistKey) {
+    if (!PLAYLISTS[playlistKey]?.length) {
+        showToast("Esta lista todavía no tiene canciones");
+        return;
+    }
+    switchPlaylistTab(`tab-${playlistKey}`);
+    loadTrack(playlistKey, 0);
+    playCurrentTrack();
+    const playlist = STAGE_PLAYLISTS.find(([key]) => key === playlistKey);
+    showToast(`Voz: ${playlist?.[2] || "Lista"} ▶️`);
+}
+
+function executeVoiceAction(actionId) {
+    const sfxByAction = {
+        "sfx-applause": "applause",
+        "sfx-drumroll": "drumroll",
+        "sfx-magic": "magic",
+        "sfx-horn": "horn",
+        "sfx-laughs": "laughs",
+        "sfx-suspense": "suspense",
+        "sfx-ding": "ding",
+        "sfx-error": "error",
+        "sfx-whistle": "whistle"
+    };
+
+    if (sfxByAction[actionId]) {
+        triggerSFX(sfxByAction[actionId]);
+        const definition = VOICE_COMMAND_DEFINITIONS.find((item) => item.id === actionId);
+        showToast(`Voz: ${definition?.label || "Sonido"}`);
+        return true;
+    }
+
+    if (actionId.startsWith("playlist-")) {
+        playPlaylistFromVoice(actionId.replace("playlist-", ""));
+        return true;
+    }
+
+    switch (actionId) {
+        case "next": playNext(); showToast("Voz: ⏭️ Siguiente canción"); return true;
+        case "previous": playPrev(); showToast("Voz: ⏮️ Canción anterior"); return true;
+        case "pause": pauseCurrentTrack(); showToast("Voz: ⏸️ Música pausada"); return true;
+        case "resume": playCurrentTrack(); showToast("Voz: ▶️ Música iniciada"); return true;
+        case "duck": toggleDuck(); showToast("Voz: 🔉 Volumen ajustado"); return true;
+        case "tarta": loadTrack("tarta", 0); playCurrentTrack(); showToast("Voz: 🎂 ¡Momento Tarta!"); return true;
+        case "mundo": loadTrack("mundo_samadry", 0); playCurrentTrack(); showToast("Voz: 🌟 ¡Mundo Samadry!"); return true;
+        default: return false;
+    }
+}
+
+function runCustomVoiceCommand(transcript) {
+    const normalizedTranscript = normalizeVoiceText(transcript);
+    const wakePosition = normalizedTranscript.lastIndexOf("samadry");
+    const afterWakeWord = wakePosition >= 0
+        ? normalizedTranscript.slice(wakePosition + "samadry".length).trim()
+        : "";
+
+    for (const command of getCustomVoiceCommands()) {
+        const definition = VOICE_COMMAND_DEFINITIONS.find((item) => item.id === command.actionId);
+        if (!definition) continue;
+        const phrase = normalizeVoiceText(command.phrase);
+        const spokenText = definition.mode === "wake" ? afterWakeWord : normalizedTranscript;
+        if (phrase && spokenText.includes(phrase)) {
+            if (definition.mode === "wake") temporarilyDuckForVoice();
+            return executeVoiceAction(command.actionId);
+        }
+    }
+
+    for (const definition of VOICE_COMMAND_DEFINITIONS) {
+        const spokenText = definition.mode === "wake" ? afterWakeWord : normalizedTranscript;
+        const matchesDefault = definition.phrases.some((phrase) =>
+            spokenText.includes(normalizeVoiceText(phrase))
+        );
+        if (matchesDefault) {
+            if (definition.mode === "wake") temporarilyDuckForVoice();
+            return executeVoiceAction(definition.id);
+        }
+    }
+    return false;
+}
+
+function renderVoiceCommands() {
+    const list = document.getElementById("voice-command-list");
+    const select = document.getElementById("new-voice-action");
+    if (!list || !select) return;
+
+    const customCommands = getCustomVoiceCommands();
+    list.innerHTML = "";
+    select.innerHTML = "";
+
+    VOICE_COMMAND_DEFINITIONS.forEach((definition) => {
+        const option = document.createElement("option");
+        option.value = definition.id;
+        option.textContent = `${definition.icon} ${definition.label}`;
+        select.appendChild(option);
+
+        const card = document.createElement("section");
+        card.className = "voice-command-item";
+
+        const heading = document.createElement("div");
+        heading.className = "voice-command-heading";
+        const title = document.createElement("strong");
+        title.textContent = `${definition.icon} ${definition.label}`;
+        const mode = document.createElement("span");
+        mode.className = `voice-command-mode ${definition.mode}`;
+        mode.textContent = definition.mode === "wake" ? "Di Samadry antes" : "Comando directo";
+        heading.append(title, mode);
+        card.appendChild(heading);
+
+        const phrases = document.createElement("div");
+        phrases.className = "voice-command-phrases";
+        definition.phrases.forEach((phrase) => {
+            const chip = document.createElement("span");
+            chip.className = "voice-phrase default";
+            chip.textContent = `“${phrase}”`;
+            phrases.appendChild(chip);
+        });
+
+        customCommands.forEach((command, index) => {
+            if (command.actionId !== definition.id) return;
+            const chip = document.createElement("span");
+            chip.className = "voice-phrase custom";
+            const phraseText = document.createElement("span");
+            phraseText.textContent = `“${command.phrase}”`;
+            const remove = document.createElement("button");
+            remove.type = "button";
+            remove.className = "voice-phrase-remove";
+            remove.textContent = "×";
+            remove.title = "Eliminar esta frase";
+            remove.setAttribute("aria-label", `Eliminar ${command.phrase}`);
+            remove.addEventListener("click", () => {
+                const nextCommands = getCustomVoiceCommands();
+                nextCommands.splice(index, 1);
+                saveCustomVoiceCommands(nextCommands);
+                renderVoiceCommands();
+                showToast("Comando personalizado eliminado");
+            });
+            chip.append(phraseText, remove);
+            phrases.appendChild(chip);
+        });
+
+        card.appendChild(phrases);
+        list.appendChild(card);
+    });
+}
+
+function openVoiceCommands() {
+    renderVoiceCommands();
+    document.getElementById("voice-commands-modal")?.classList.remove("hidden");
+}
+
+function closeVoiceCommands() {
+    document.getElementById("voice-commands-modal")?.classList.add("hidden");
+}
+
 function initVoiceAssistant() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
@@ -1448,6 +1651,12 @@ function processVoiceCommand(transcript) {
     const now = Date.now();
     if (now - _lastCommandAt < 2000) return; // Cooldown 2s entre comandos
 
+    transcript = normalizeVoiceText(transcript);
+    if (runCustomVoiceCommand(transcript)) {
+        _lastCommandAt = now;
+        return;
+    }
+
     // --- Comandos directos (sin activador) ---
 
     // "siguiente canción" → pasa a la siguiente pista
@@ -1478,6 +1687,14 @@ function processVoiceCommand(transcript) {
     if (transcript.includes("preparados listos")) {
         _lastCommandAt = now;
         startGamesMusicNow();
+        return;
+    }
+
+    const themedPlaylist = ["piratas", "exploradores", "bluey", "kpop", "spiderman"]
+        .find((key) => transcript.includes(`empieza ${key}`) || transcript.includes(`lista ${key}`));
+    if (themedPlaylist) {
+        _lastCommandAt = now;
+        playPlaylistFromVoice(themedPlaylist);
         return;
     }
 
@@ -1517,7 +1734,7 @@ function processVoiceCommand(transcript) {
         let cleanText = transcript.replace(/.*samadry/, "").trim();
         
         // --- 1. Disparo de Sonidos (Soundboard) ---
-        if (cleanText.includes("aplausos") || cleanText.includes("aplauso") || cleanText.includes("ovación")) {
+        if (cleanText.includes("aplausos") || cleanText.includes("aplauso") || cleanText.includes("ovacion")) {
             triggerSFX("applause");
             showToast("Voz: Aplausos 👏");
             return;
@@ -1527,7 +1744,7 @@ function processVoiceCommand(transcript) {
             showToast("Voz: Redoble 🥁");
             return;
         }
-        if (cleanText.includes("magia") || cleanText.includes("mágico") || cleanText.includes("varita")) {
+        if (cleanText.includes("magia") || cleanText.includes("magico") || cleanText.includes("varita")) {
             triggerSFX("magic");
             showToast("Voz: Mágico 🪄");
             return;
@@ -1542,7 +1759,7 @@ function processVoiceCommand(transcript) {
             showToast("Voz: Risas 😆");
             return;
         }
-        if (cleanText.includes("suspenso") || cleanText.includes("misterio") || cleanText.includes("tensión")) {
+        if (cleanText.includes("suspenso") || cleanText.includes("misterio") || cleanText.includes("tension")) {
             triggerSFX("suspense");
             showToast("Voz: Suspenso 🕵️");
             return;
@@ -1569,7 +1786,7 @@ function processVoiceCommand(transcript) {
             showToast("Voz: Música pausada ⏸️");
             return;
         }
-        if (cleanText.includes("reproduce") || cleanText.includes("continúa") || cleanText.includes("play") || cleanText.includes("sonar")) {
+        if (cleanText.includes("reproduce") || cleanText.includes("continua") || cleanText.includes("play") || cleanText.includes("sonar")) {
             playCurrentTrack();
             showToast("Voz: Música iniciada ▶️");
             return;
@@ -1579,18 +1796,18 @@ function processVoiceCommand(transcript) {
             showToast("Voz: Siguiente canción ⏭️");
             return;
         }
-        if (cleanText.includes("anterior") || cleanText.includes("atrás") || cleanText.includes("volver")) {
+        if (cleanText.includes("anterior") || cleanText.includes("atras") || cleanText.includes("volver")) {
             playPrev();
             showToast("Voz: Canción anterior ⏮️");
             return;
         }
         
         // --- 3. Búsqueda y Reproducción de Música (Spotify / Local) ---
-        if (cleanText.includes("pon la canción de") || cleanText.includes("busca la canción de") || cleanText.includes("pon la música de") || cleanText.startsWith("pon ") || cleanText.startsWith("reproduce ")) {
+        if (cleanText.includes("pon la cancion de") || cleanText.includes("busca la cancion de") || cleanText.includes("pon la musica de") || cleanText.startsWith("pon ") || cleanText.startsWith("reproduce ")) {
             let songQuery = cleanText
-                .replace(/pon la canción de/, "")
-                .replace(/busca la canción de/, "")
-                .replace(/pon la música de/, "")
+                .replace(/pon la cancion de/, "")
+                .replace(/busca la cancion de/, "")
+                .replace(/pon la musica de/, "")
                 .replace(/^pon\s+/, "")
                 .replace(/^reproduce\s+/, "")
                 .trim();
@@ -3258,6 +3475,7 @@ document.getElementById("stage-next")?.addEventListener("click", playNext);
 document.getElementById("stage-play")?.addEventListener("click", togglePlay);
 document.getElementById("stage-duck")?.addEventListener("click", toggleDuck);
 document.getElementById("stage-voice")?.addEventListener("click", () => toggleVoiceAssistant());
+document.getElementById("stage-voice-commands")?.addEventListener("click", openVoiceCommands);
 document.getElementById("stage-tarta")?.addEventListener("click", async () => {
     loadTrack("tarta", 0);
     await playCurrentTrack();
@@ -3367,10 +3585,41 @@ const closeModalBtn = document.getElementById("close-modal-btn");
 const saveSettingsBtn = document.getElementById("save-settings-btn");
 const spotifyConnectBtn = document.getElementById("spotify-connect-btn");
 const spotifyClientIdInput = document.getElementById("spotify-client-id");
+const voiceCommandsModal = document.getElementById("voice-commands-modal");
 
 // Toggles para el asistente de voz
 voiceBtn.addEventListener("click", () => {
     toggleVoiceAssistant();
+});
+
+document.getElementById("voice-commands-btn")?.addEventListener("click", openVoiceCommands);
+document.getElementById("close-voice-commands-btn")?.addEventListener("click", closeVoiceCommands);
+document.getElementById("add-voice-command-form")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const phraseInput = document.getElementById("new-voice-phrase");
+    const actionSelect = document.getElementById("new-voice-action");
+    const phrase = phraseInput.value.trim();
+    const normalizedPhrase = normalizeVoiceText(phrase);
+    if (normalizedPhrase.length < 3) {
+        showToast("Escribe una frase un poco más larga");
+        return;
+    }
+
+    const commands = getCustomVoiceCommands();
+    const definition = VOICE_COMMAND_DEFINITIONS.find((item) => item.id === actionSelect.value);
+    const duplicate = commands.some((command) =>
+        command.actionId === actionSelect.value && normalizeVoiceText(command.phrase) === normalizedPhrase
+    ) || definition?.phrases.some((defaultPhrase) => normalizeVoiceText(defaultPhrase) === normalizedPhrase);
+    if (duplicate) {
+        showToast("Esa frase ya está añadida a esta función");
+        return;
+    }
+
+    commands.push({ phrase, actionId: actionSelect.value });
+    saveCustomVoiceCommands(commands);
+    phraseInput.value = "";
+    renderVoiceCommands();
+    showToast("Nuevo comando de voz guardado");
 });
 
 // Controladores del Modal de Ajustes
@@ -3386,6 +3635,15 @@ closeModalBtn.addEventListener("click", () => {
 window.addEventListener("click", (e) => {
     if (e.target === settingsModal) {
         settingsModal.classList.add("hidden");
+    }
+    if (e.target === voiceCommandsModal) {
+        closeVoiceCommands();
+    }
+});
+
+window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !voiceCommandsModal?.classList.contains("hidden")) {
+        closeVoiceCommands();
     }
 });
 

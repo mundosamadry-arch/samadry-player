@@ -47,10 +47,14 @@ Para poder reproducir música directamente desde tu cuenta Premium de Spotify de
 
 Para activar el asistente de voz, haz clic en el icono del **Micrófono (🎙️)** en el encabezado y concede los permisos de micrófono al navegador. Cuando esté activo, el botón parpadeará en color rojo neón.
 
-### 🎮 El Comando del Juego ("Preparados, Listos, Ya")
+El botón **Comandos (📋)** abre el listado completo dentro de la app. Desde esa pantalla cada animador puede añadir frases alternativas para una función y eliminarlas después. Estas frases se guardan solo en el dispositivo donde se crean.
+
+### 🎮 El Comando del Juego ("Preparados, Listos")
 Este comando es **libre** (no requiere decir "Samadry" antes) para que sea súper dinámico e interactivo:
-* **Di en voz alta**: *"¡Preparados, listos, ya!"* o *"¡Preparados, listos y ya!"*
-* **Efecto**: La música actual se pausará de inmediato, aparecerá una **cuenta atrás gigante neón en pantalla (3, 2, 1...)** sincronizada con pitidos sonoros, y al llegar a "¡YA!" sonará una bocina y comenzará a sonar automáticamente la primera canción de la lista **Juegos** (ej. "Ritmo de Palmas") para empezar la dinámica.
+* **Di en voz alta**: *"¡Preparados, listos!"* o *"¡Preparados, listos, ya!"*
+
+También se puede iniciar directamente cualquier lista diciendo *"empieza piratas"*, *"empieza exploradores"*, *"empieza Bluey"*, *"empieza Kpop"* o *"empieza Spiderman"*.
+* **Efecto**: La primera canción de la lista **Juegos** empieza directamente, sin cuenta atrás.
 
 ### 🗣️ Comandos con Activador ("Oye Samadry")
 Dí en voz alta el activador **"Samadry"** seguido de la acción:

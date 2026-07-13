@@ -1,6 +1,6 @@
 # Samadry Player - Estado del proyecto y traspaso
 
-Ultima actualizacion: 2026-07-12
+Ultima actualizacion: 2026-07-13
 
 ## Estado actual resumido
 
@@ -10,6 +10,8 @@ Ultima actualizacion: 2026-07-12
 - `catalogo.html` permite generar `playlists.json` sin escribir JSON manualmente.
 - El Modo Escenario permite elegir lista, reproducir, bajar volumen, activar voz, descargar una lista offline y lanzar efectos.
 - La voz procesa solo frases terminadas, evita ordenes duplicadas y baja temporalmente la musica al reconocer "Samadry".
+- La app incluye un listado visible de comandos de voz. El animador puede añadir frases alternativas y eliminarlas; se guardan en `localStorage` con la clave `samadry_voice_commands`.
+- Hay comandos directos para iniciar cualquiera de las seis listas del hosting.
 - Spotify sigue siendo opcional y requiere una cuenta Premium por animador.
 
 Este documento resume que se ha hecho, donde esta cada cosa y que problemas quedan abiertos para que otro programador pueda continuar el proyecto.
@@ -25,6 +27,7 @@ Samadry Player es una app web estatica para animadores infantiles. Incluye:
 - Notas locales.
 - Integracion prevista con Spotify Premium.
 - Asistente de voz.
+- Gestor de comandos de voz personalizables por dispositivo.
 
 La app principal esta hecha con HTML, CSS y JavaScript sin framework.
 

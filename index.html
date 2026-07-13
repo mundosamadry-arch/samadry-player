@@ -38,6 +38,7 @@
             <div class="header-controls">
                 <!-- Asistente de Voz -->
                 <button id="voice-assistant-btn" class="icon-btn voice-btn-inactive" title="Activar Asistente de Voz">🎙️</button>
+                <button id="voice-commands-btn" class="icon-btn" title="Ver y personalizar comandos de voz">📋</button>
 
                 <!-- Selector de Duración del Show -->
                 <div class="control-group">
@@ -198,6 +199,31 @@
         </footer>
     </div>
 
+    <!-- MODAL DE COMANDOS DE VOZ -->
+    <div id="voice-commands-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="voice-commands-title">
+        <div class="modal-content voice-commands-modal-content glass-card">
+            <button id="close-voice-commands-btn" class="close-btn close-btn-button" type="button" aria-label="Cerrar">&times;</button>
+            <h2 id="voice-commands-title">🎙️ Comandos de voz</h2>
+            <p class="modal-desc">Consulta lo que puedes decir y añade tus propias frases. Los cambios se guardan en este dispositivo.</p>
+
+            <div class="voice-command-help">
+                <strong>Para pedir una canción:</strong>
+                <span>“Samadry, pon Superhéroe”</span>
+            </div>
+
+            <div id="voice-command-list" class="voice-command-list"></div>
+
+            <form id="add-voice-command-form" class="voice-command-form">
+                <h3>Añadir una frase nueva</h3>
+                <label for="new-voice-phrase">Cuando diga</label>
+                <input id="new-voice-phrase" class="custom-input" type="text" maxlength="80" placeholder="Por ejemplo: vamos con la siguiente" required>
+                <label for="new-voice-action">La app hará</label>
+                <select id="new-voice-action" class="custom-select"></select>
+                <button type="submit" class="btn btn-success">＋ Añadir comando</button>
+            </form>
+        </div>
+    </div>
+
     <!-- MODAL DE AJUSTES (SPOTIFY CONFIG) -->
     <div id="settings-modal" class="modal hidden">
         <div class="modal-content glass-card">
@@ -254,6 +280,7 @@
 
         <div class="stage-quick">
             <button id="stage-voice" class="stage-btn stage-voice">🎙️ Escuchar</button>
+            <button id="stage-voice-commands" class="stage-btn">📋 Comandos</button>
             <button id="stage-download" class="stage-btn">⬇️ Lista offline</button>
             <button id="stage-tarta" class="stage-btn">🎂 Tarta</button>
             <button id="stage-mundo" class="stage-btn">🌟 Mundo Samadry</button>
